@@ -300,7 +300,7 @@ def delete_book(book_id: int):
             return redirect(url_for('my_books', username=current_user.name))
 
         data_manager.delete(user_book)
-        flash(f"Book '{user_book.reading_book.title}' was deleted successfully")
+        flash(f"Book was deleted successfully")
 
     except ValueError as e:
         flash(str(e))
@@ -388,7 +388,33 @@ def join_community(community_id):
     return redirect(url_for('my_communities', username=current_user.name))
 
 
+@app.route('/communities/delete/<int:community_id>', methods=['POST'])
+@login_required
+def leave_community(community_id: int):
+    try:
+        user_community = data_manager.get_entity_by_multiple_fields(
+            UserCommunities,
+            user_id=current_user.id,
+            community_id=community_id
+        )
 
+        if not user_community:
+            flash("Community not found.")
+            return redirect(url_for('my_communities', username=current_user.name))
+
+        data_manager.delete(user_community)
+        flash("Community was deleted successfully")
+
+    except ValueError as e:
+        flash(str(e))
+
+    except SQLAlchemyError as e:
+        flash(f"Database error: {str(e)}")
+
+    except Exception as e:
+        flash(f"Some error occurred. Please try again: {str(e)}")
+
+    return redirect(url_for('my_communities', username=current_user.name))
 
 
 # *********************************************

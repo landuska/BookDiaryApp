@@ -32,7 +32,12 @@
                                     </div>
                                 </div>
                                  </div>
-                            <button class="btn btn-link text-danger p-0">Leave Community</button>
+                            <form action="{{ url_for('leave_community', community_id=community.community_id) }}"
+                          method="POST">
+                        <button class="btn btn-link text-danger p-0" type="submit">
+                            Leave Community
+                        </button>
+                    </form>
                         </div>
                                     {% else %}
                                         </div>

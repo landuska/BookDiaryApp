@@ -16,7 +16,7 @@
 
     <div class="row align-items-end mb-5">
         <div class="col-md-8">
-            <h1 class="fw-bold display-5 mb-1">My Communities</h1>
+            <h1 class="fw-bold display-5 mb-1">My Book Clubs</h1>
             <p class="text-muted mb-0">Clubs you have joined or created.</p>
         </div>
         <div class="col-md-4 text-md-end mt-3 mt-md-0">
@@ -51,7 +51,7 @@
                         <p class="text-muted small mb-4">Sharing thoughts and reading goals together.</p>
 
                         <div class="d-grid">
-                            <a href="#" class="btn btn-outline-primary fw-bold py-2" style="border-radius: 10px;">
+                            <a href="{{ url_for('community_info', community_id=community.community_id) }}" class="btn btn-outline-primary fw-bold py-2" style="border-radius: 10px;">
                                 Enter Club
                             </a>
                         </div>

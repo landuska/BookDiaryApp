@@ -59,13 +59,28 @@ def books_by_author(author_id):
     return render_template('books_by_author.html', books=all_books, author=author)
 
 
-# *************** CLUBS ****************
+# *************** COMMUNITIES ****************
 
 
 @app.route('/communities', methods=['GET'])
 def all_communities():
     communities = data_manager.get_entities(Community)
     return render_template('communities.html', communities=communities)
+
+
+@app.route('/communities/<int:community_id>', methods=['GET'])
+def community_info(community_id):
+    community = data_manager.get_entity_by_multiple_fields(Community, community_id=community_id)
+    members = community.list_of_members
+
+    is_member = False
+    if current_user.is_authenticated:
+        for user in members:
+            if user.user_id == current_user.id:
+                is_member = True
+                break
+
+    return render_template('community_info.html', community=community,members=members,is_member=is_member)
 
 
 # ***********************************************
@@ -351,6 +366,30 @@ def create_community():
 
     if request.method == 'GET':
         return render_template('create_community.html')
+
+
+@app.route('/communities/join/<int:community_id>', methods=['POST'])
+@login_required
+def join_community(community_id):
+    try:
+        data_manager.add_user_to_community(current_user.id, community_id)
+        flash(f"User joined to community successfully")
+        return redirect(url_for('community_info', community_id=community_id))
+
+    except ValueError as e:
+        flash(str(e))
+
+    except SQLAlchemyError as e:
+        flash(f"Database error: {str(e)}")
+
+    except Exception as e:
+        flash(f"Some error occurred. Please try again: {str(e)}")
+
+    return redirect(url_for('my_communities', username=current_user.name))
+
+
+
+
 
 # *********************************************
 # ************ ERRORS *************************

@@ -388,7 +388,7 @@ def join_community(community_id):
     return redirect(url_for('my_communities', username=current_user.name))
 
 
-@app.route('/communities/delete/<int:community_id>', methods=['POST'])
+@app.route('/communities/leave/<int:community_id>', methods=['POST'])
 @login_required
 def leave_community(community_id: int):
     try:
@@ -416,6 +416,30 @@ def leave_community(community_id: int):
 
     return redirect(url_for('my_communities', username=current_user.name))
 
+
+@app.route('/communities/delete/<int:community_id>', methods=['POST'])
+@login_required
+def delete_community(community_id: int):
+    try:
+        community_obj = data_manager.get_entity_by_id(Community, community_id)
+
+        if not community_obj:
+            flash("Community not found.")
+            return redirect(url_for('my_communities', username=current_user.name))
+
+        data_manager.delete(community_obj)
+        flash("Community was deleted successfully")
+
+    except ValueError as e:
+        flash(str(e))
+
+    except SQLAlchemyError as e:
+        flash(f"Database error: {str(e)}")
+
+    except Exception as e:
+        flash(f"Some error occurred. Please try again: {str(e)}")
+
+    return redirect(url_for('my_communities', username=current_user.name))
 
 # *********************************************
 # ************ ERRORS *************************

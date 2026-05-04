@@ -81,7 +81,8 @@ class Community(db.Model):
     community_id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
     community_name: Mapped[str] = mapped_column(String, unique=True, nullable=False)
 
-    list_of_members: Mapped[List["UserCommunities"]] = relationship(back_populates="user_community")
+    list_of_members: Mapped[List["UserCommunities"]] = relationship(back_populates="user_community", cascade="all, delete",
+        passive_deletes=True)
 
     def __repr__(self):
         return f"Community (id={self.community_id}, name={self.community_name})"

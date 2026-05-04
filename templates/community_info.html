@@ -32,12 +32,23 @@
                                     </div>
                                 </div>
                                  </div>
-                            <form action="{{ url_for('leave_community', community_id=community.community_id) }}"
-                          method="POST">
-                        <button class="btn btn-link text-danger p-0" type="submit">
-                            Leave Community
-                        </button>
-                    </form>
+                            <div class="mt-4 pt-4 border-top d-flex justify-content-between align-items-center">
+
+    <form action="{{ url_for('leave_community', community_id=community.community_id) }}" method="POST">
+        <button class="btn btn-link text-muted p-0 text-decoration-none small" type="submit" onclick="return confirm('Leave this club?')">
+            Leave Community
+        </button>
+    </form>
+
+    <form action="{{ url_for('delete_community', community_id=community.community_id) }}" method="POST">
+        <button class="btn btn-outline-danger btn-sm px-3" type="submit"
+                onclick="return confirm('ARE YOU SURE? This will permanently delete the community and all its data!')"
+                style="border-radius: 10px;">
+            <i class="bi bi-trash3 me-1"></i> Delete Club
+        </button>
+    </form>
+</div>
+
                         </div>
                                     {% else %}
                                         </div>

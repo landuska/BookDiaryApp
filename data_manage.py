@@ -189,6 +189,10 @@ class DataManager():
         return db.session.query(model).filter_by(**kwargs).first()
 
 
+    def get_entity_by_id(self, model: Type[db.Model], id: int):
+        return db.session.get(model, id)
+
+
     def delete(self, entity) -> None:
         try:
             db.session.delete(entity)

@@ -189,8 +189,15 @@ def delete_user(username):
 @app.route('/user/<username>/user_books', methods=['GET'])
 @login_required
 def user_books(username):
-    all_user_books = data_manager.get_books_by_user(user_id=current_user.id)
-    return render_template('user_books.html', books=all_user_books)
+    status = request.args.get('status')
+    rating = request.args.get('rating', type=float)
+
+    all_user_books = data_manager.get_filtered_books(
+        user_id=current_user.id,
+        status=status,
+        min_rating=rating
+    )
+    return render_template('user_books.html', books=all_user_books,current_status=status,current_rating=rating)
 
 
 @app.route('/user/<username>/add_book', methods=['GET', 'POST'])

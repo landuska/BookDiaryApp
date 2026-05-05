@@ -72,6 +72,23 @@ class DataManager():
         return []
 
 
+    def get_filtered_books(self, user_id: int, status: str = None, min_rating: float = None):
+        all_books = self.get_books_by_user(user_id)
+
+        if all_books:
+            filtered_books = all_books
+
+            if status and status != 'All':
+                filtered_books = [book for book in filtered_books if book.status == status]
+
+            if min_rating and min_rating > 0:
+                filtered_books = [book for book in filtered_books if book.rating is not None and book.rating >= min_rating]
+
+            return filtered_books
+
+        return []
+
+
     def update_user_book(self,
                                 user_id: int,
                                 book_id: int,

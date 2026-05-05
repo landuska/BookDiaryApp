@@ -85,9 +85,9 @@
                             {% if is_owner %}
                             <div class="input-field mt-2">
                                 <select name="status" class="form-select border-primary">
-                                    <option value="Reading" {% if book.status == 'Currently reading' %}selected{% endif %}>Currently reading</option>
+                                    <option value="Currently reading" {% if book.status == 'Currently reading' %}selected{% endif %}>Currently reading</option>
                                     <option value="Completed" {% if book.status == 'Completed' %}selected{% endif %}>Completed</option>
-                                    <option value="Planned" {% if book.status == 'Want to read' %}selected{% endif %}>Want to read</option>
+                                    <option value="Want to read" {% if book.status == 'Want to read' %}selected{% endif %}>Want to read</option>
                                 </select>
                             </div>
                             {% endif %}

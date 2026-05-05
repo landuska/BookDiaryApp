@@ -2,6 +2,15 @@
 
 {% block content %}
 <style>
+    {% if not is_owner %}
+    .display-area {
+        pointer-events: none;
+        cursor: default !important;
+    }
+    .display-area:hover {
+        background-color: transparent !important;
+    }
+    {% endif %}
     .edit-toggle {
         display: none;
     }
@@ -29,19 +38,25 @@
         background-color: #fcfcfc;
         border: 1px solid #eee;
         min-height: 120px;
-        white-space: pre-wrap; /* Чтобы сохранялись переносы строк */
+        white-space: pre-wrap;
         word-wrap: break-word;
     }
 </style>
 
 <div class="container py-5">
     <div class="mb-4">
-        <a href="{{ url_for('my_books', username=current_user.name) }}" class="btn btn-link text-decoration-none text-muted p-0">
+        {% if is_owner %}
+        <a href="{{ url_for('user_books', username=current_user.name) }}" class="btn btn-link text-decoration-none text-muted p-0">
             &larr; Back to My Library
         </a>
+        {% else %}
+        <a href="javascript:history.back()" class="btn btn-link text-decoration-none text-muted p-0">
+            &larr; Back to Members
+        </a>
+        {% endif %}
     </div>
 
-    <form action="{{ url_for('update_book_info', book_id=book.book_id) }}" method="POST">
+    <form action="{{ url_for('update_book_info', book_id=book.book_id) if is_owner else '#' }}" method="POST">
         <div class="row g-4">
             <div class="col-lg-4">
                 <div class="card border-0 shadow-sm text-center p-4" style="border-radius: 20px;">
@@ -65,15 +80,17 @@
                         <div class="edit-wrapper">
                             <input type="checkbox" id="edit-status" class="edit-toggle">
                             <label for="edit-status" class="display-area d-block">
-                                <span class="badge bg-primary px-3 py-2">{{ book.status or 'Reading' }}</span>
+                                <span class="badge bg-primary px-3 py-2">{{ book.status or 'Want to read' }}</span>
                             </label>
+                            {% if is_owner %}
                             <div class="input-field mt-2">
                                 <select name="status" class="form-select border-primary">
-                                    <option value="Reading" {% if book.status == 'Reading' %}selected{% endif %}>Reading</option>
+                                    <option value="Reading" {% if book.status == 'Currently reading' %}selected{% endif %}>Currently reading</option>
                                     <option value="Completed" {% if book.status == 'Completed' %}selected{% endif %}>Completed</option>
-                                    <option value="Planned" {% if book.status == 'Planned' %}selected{% endif %}>Planned</option>
+                                    <option value="Planned" {% if book.status == 'Want to read' %}selected{% endif %}>Want to read</option>
                                 </select>
                             </div>
+                            {% endif %}
                         </div>
                     </div>
 
@@ -82,16 +99,18 @@
                         <div class="edit-wrapper">
                             <input type="checkbox" id="edit-rating" class="edit-toggle">
                             <label for="edit-rating" class="display-area d-block">
-                                <span class="fs-4 fw-bold text-warning">⭐ {{ book.rating or '?' }}</span>
+                                <span class="fs-4 fw-bold text-warning">⭐ {{ book.rating or '' }}</span>
                             </label>
+                            {% if is_owner %}
                             <div class="input-field mt-2">
                                 <input type="number" name="rating" step="0.5" min="0" max="10" class="form-control border-primary" value="{{ book.rating or '' }}">
                             </div>
+                            {% endif %}
                         </div>
                     </div>
 
                     <div class="mb-4">
-                        <label class="text-muted small fw-bold text-uppercase">Notes (click to edit)</label>
+                        <label class="text-muted small fw-bold text-uppercase">Notes {{ '(click to edit)' if is_owner }}</label>
                         <div class="edit-wrapper">
                             <input type="checkbox" id="edit-note" class="edit-toggle">
                             <label for="edit-note" class="display-area d-block">
@@ -103,17 +122,20 @@
                                     {% endif %}
                                 </div>
                             </label>
+                            {% if is_owner %}
                             <div class="input-field mt-2">
                                 <textarea name="note" class="form-control border-primary" rows="8">{{ book.note or '' }}</textarea>
                             </div>
+                            {% endif %}
                         </div>
                     </div>
-
+                    {% if is_owner %}
                     <div class="mt-4">
                         <button type="submit" class="btn btn-primary btn-lg w-100 fw-bold" style="border-radius: 12px;">
                             Save Changes
                         </button>
                     </div>
+                    {% endif %}
                 </div>
             </div>
         </div>

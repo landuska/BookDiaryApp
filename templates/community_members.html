@@ -43,11 +43,27 @@
                                         {% if user_book.reading_book %}
                                             <div class="list-group-item bg-transparent border-0 px-0 py-1 d-flex align-items-baseline">
                                                 <span class="text-primary me-2" style="font-size: 1.2rem; line-height: 1;">•</span>
-                                                <a href="{{ url_for('update_book_info', book_id=user_book.reading_book.book_id) }}"
+                                                <a href="{{ url_for('user_book_info', user_id=current_member.id, book_id=user_book.reading_book.book_id) }}"
                                                    class="text-decoration-none text-dark fw-semibold book-title-link">
                                                     {{ user_book.reading_book.title }}
                                                 </a>
                                             </div>
+                                    <div class="ms-2">
+                        {% if user_book.reading_book.book_id in my_book_ids %}
+                            <span class="badge rounded-pill bg-light text-success border">
+                                <i class="bi bi-check2"></i> In Library
+                            </span>
+                        {% else %}
+                            <form action="{{ url_for('add_book', username=current_user.name) }}" method="POST" class="d-inline">
+                                <input type="hidden" name="title" value="{{ user_book.reading_book.title }}">
+                                <button type="submit" class="btn btn-sm btn-outline-primary py-0 px-2"
+                                        style="font-size: 0.7rem; border-radius: 8px;"
+                                        title="Add to my library">
+                                    + Add
+                                </button>
+                            </form>
+                        {% endif %}
+                    </div>
                                         {% endif %}
                                     {% endfor %}
 

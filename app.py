@@ -186,11 +186,11 @@ def delete_user(username):
 # ************* BOOKS **************************
 
 
-@app.route('/user/<username>/my_books', methods=['GET'])
+@app.route('/user/<username>/user_books', methods=['GET'])
 @login_required
-def my_books(username):
-    user_books = data_manager.get_books_by_user(user_id=current_user.id)
-    return render_template('my_books.html', books=user_books)
+def user_books(username):
+    all_user_books = data_manager.get_books_by_user(user_id=current_user.id)
+    return render_template('user_books.html', books=all_user_books)
 
 
 @app.route('/user/<username>/add_book', methods=['GET', 'POST'])
@@ -257,35 +257,39 @@ def add_book(username):
         return render_template('add_book.html', username=current_user.name)
 
 
-@app.route('/my_books/update/<int:book_id>', methods=['GET', 'POST'])
+@app.route('/<int:user_id>/user_books/<int:book_id>', methods=['GET'])
+@login_required
+def user_book_info(user_id, book_id):
+    user_book = data_manager.get_entity_by_multiple_fields(UserBooks, user_id=user_id, book_id=book_id)
+    is_owner = (current_user.id == user_id)
+
+    return render_template('book_info.html', book=user_book, is_owner=is_owner)
+
+
+@app.route('/user_books/update/<int:book_id>', methods=['POST'])
 @login_required
 def update_book_info(book_id):
-    if request.method == 'POST':
-        status = request.form.get('status')
-        rating = request.form.get('rating')
-        note = request.form.get('note')
-        try:
-            data_manager.update_user_book(current_user.id, book_id, status, rating, note)
-            flash("Book was updated successfully")
-            return redirect(url_for('my_books', username=current_user.name))
+    status = request.form.get('status')
+    rating = request.form.get('rating')
+    note = request.form.get('note')
+    try:
+        data_manager.update_user_book(current_user.id, book_id, status, rating, note)
+        flash("Book was updated successfully")
+        return redirect(url_for('user_books', username=current_user.name))
 
-        except ValueError as e:
-            flash(str(e))
+    except ValueError as e:
+        flash(str(e))
 
-        except SQLAlchemyError as e:
-            flash(f"Database error: {str(e)}")
+    except SQLAlchemyError as e:
+        flash(f"Database error: {str(e)}")
 
-        except Exception as e:
-            flash(f"Some error occurred. Please try again: {str(e)}")
+    except Exception as e:
+        flash(f"Some error occurred. Please try again: {str(e)}")
 
-        return redirect(url_for('my_books', username=current_user.name))
-
-    if request.method == 'GET':
-        user_book = data_manager.get_entity_by_multiple_fields(UserBooks, user_id=current_user.id, book_id=book_id)
-        return render_template('book_info.html', book=user_book)
+    return redirect(url_for('user_books', username=current_user.name))
 
 
-@app.route('/my_books/delete/<int:book_id>', methods=['POST'])
+@app.route('/user_books/delete/<int:book_id>', methods=['POST'])
 @login_required
 def delete_book(book_id: int):
     try:
@@ -297,7 +301,7 @@ def delete_book(book_id: int):
 
         if not user_book:
             flash("Book not found in your collection.")
-            return redirect(url_for('my_books', username=current_user.name))
+            return redirect(url_for('user_books', username=current_user.name))
 
         data_manager.delete(user_book)
         flash(f"Book was deleted successfully")
@@ -311,30 +315,30 @@ def delete_book(book_id: int):
     except Exception as e:
         flash(f"Some error occurred. Please try again: {str(e)}")
 
-    return redirect(url_for('my_books', username=current_user.name))
+    return redirect(url_for('user_books', username=current_user.name))
 
 
 # ********************* AUTHORS ************************
 
 
-@app.route('/user/<username>/my_authors', methods=['GET'])
+@app.route('/user/<username>/user_authors', methods=['GET'])
 @login_required
-def my_authors(username):
+def user_authors(username):
     authors = data_manager.get_authors_by_user(user_id=current_user.id)
-    return render_template('my_authors.html', authors=authors)
+    return render_template('user_authors.html', authors=authors)
 
 
 # *******************+ COMMUNITIES *********************
 
 
-@app.route('/user/<username>/my_communities', methods=['GET'])
+@app.route('/user/<username>/user_communities', methods=['GET'])
 @login_required
-def my_communities(username):
-    user_communities = data_manager.get_communities_by_user(user_id=current_user.id)
-    return render_template('my_communities.html', communities=user_communities)
+def user_communities(username):
+    all_user_communities = data_manager.get_communities_by_user(user_id=current_user.id)
+    return render_template('user_communities.html', communities=all_user_communities)
 
 
-@app.route('/communities/create', methods=['GET', 'POST'])
+@app.route('/user_communities/create', methods=['GET', 'POST'])
 @login_required
 def create_community():
     if request.method == 'POST':
@@ -353,7 +357,7 @@ def create_community():
 
             data_manager.add_user_to_community(user_id=current_user.id, community_id=community_obj.community_id)
             flash(f"User was added to community successfully")
-            return redirect(url_for('my_communities', username=current_user.name))
+            return redirect(url_for('user_communities', username=current_user.name))
 
         except ValueError as e:
             flash(str(e))
@@ -387,7 +391,7 @@ def join_community(community_id):
     except Exception as e:
         flash(f"Some error occurred. Please try again: {str(e)}")
 
-    return redirect(url_for('my_communities', username=current_user.name))
+    return redirect(url_for('user_communities', username=current_user.name))
 
 @app.route('/members/<int:community_id>', methods=['GET'])
 @login_required
@@ -414,7 +418,7 @@ def leave_community(community_id: int):
 
         if not user_community:
             flash("Community not found.")
-            return redirect(url_for('my_communities', username=current_user.name))
+            return redirect(url_for('user_communities', username=current_user.name))
 
         data_manager.delete(user_community)
         flash("Community was deleted successfully")
@@ -428,7 +432,7 @@ def leave_community(community_id: int):
     except Exception as e:
         flash(f"Some error occurred. Please try again: {str(e)}")
 
-    return redirect(url_for('my_communities', username=current_user.name))
+    return redirect(url_for('user_communities', username=current_user.name))
 
 
 @app.route('/communities/delete/<int:community_id>', methods=['POST'])
@@ -439,7 +443,7 @@ def delete_community(community_id: int):
 
         if not community_obj:
             flash("Community not found.")
-            return redirect(url_for('my_communities', username=current_user.name))
+            return redirect(url_for('user_communities', username=current_user.name))
 
         data_manager.delete(community_obj)
         flash("Community was deleted successfully")
@@ -453,7 +457,7 @@ def delete_community(community_id: int):
     except Exception as e:
         flash(f"Some error occurred. Please try again: {str(e)}")
 
-    return redirect(url_for('my_communities', username=current_user.name))
+    return redirect(url_for('user_communities', username=current_user.name))
 
 # *********************************************
 # ************ ERRORS *************************

@@ -21,15 +21,12 @@
             <div class="col-md-4 mb-4">
                 <div class="card border-0 shadow-sm h-100 text-center p-3" style="border-radius: 15px;">
                     <div class="card-body">
-                        <div class="rounded-circle bg-light d-inline-flex align-items-center justify-content-center text-primary mb-3" 
-                             style="width: 60px; height: 60px; font-size: 1.5rem; font-weight: bold;">
-                            {{ author.author_name[0] | upper }}
-                        </div>
+
                         <h5 class="fw-bold mb-1">{{ author.author_name }}</h5>
                         <p class="text-muted small">
-                            {{ author.birth_date.strftime('%Y') if author.birth_date else 'Unknown' }} 
+                            {{ author.birth_date.strftime('%Y') if author.birth_date else '' }}
                             - 
-                            {{ author.death_date.strftime('%Y') if author.death_date else 'Present' }}
+                            {{ author.death_date.strftime('%Y') if author.death_date else '' }}
                         </p>
                         <hr class="my-3" style="opacity: 0.1;">
                         <a href="{{ url_for('books_by_author', author_id=author.author_id) }}" class="btn btn-sm btn-outline-primary px-3" style="border-radius: 8px;">View Books</a>

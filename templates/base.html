@@ -29,9 +29,9 @@
                             {{ current_user.name }}
                         </a>
                         <ul class="dropdown-menu dropdown-menu-end dropdown-menu-dark" aria-labelledby="userDropdown">
-                            <li><a class="dropdown-item" href="{{ url_for('my_books', username=current_user.name) }}">My Books</a></li>
-                            <li><a class="dropdown-item" href="{{ url_for('my_authors', username=current_user.name) }}">My Authors</a></li>
-                            <li><a class="dropdown-item" href="{{ url_for('my_communities', username=current_user.name) }}">My Clubs</a></li>
+                            <li><a class="dropdown-item" href="{{ url_for('user_books', username=current_user.name) }}">My Books</a></li>
+                            <li><a class="dropdown-item" href="{{ url_for('user_authors', username=current_user.name) }}">My Authors</a></li>
+                            <li><a class="dropdown-item" href="{{ url_for('user_communities', username=current_user.name) }}">My Clubs</a></li>
                             <li><a class="dropdown-item" href="{{ url_for('user_page', username=current_user.name) }}">My Account</a></li>
                             <li><hr class="dropdown-divider"></li>
                             <li><a class="dropdown-item text-danger" href="{{ url_for('logout', username=current_user.name) }}">Logout</a></li>

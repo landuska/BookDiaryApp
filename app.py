@@ -206,7 +206,7 @@ def user_books(username):
         min_rating=rating
     )
     is_owner = (current_user.id == user.id)
-    return render_template('user_books.html', user=user, books=all_user_books,current_status=status,current_rating=rating, is_owner=is_owner)
+    return render_template('user_books.html', user=user, books=all_user_books,current_status=status,current_rating=rating,is_owner=is_owner)
 
 
 @app.route('/<username>/add_book', methods=['GET', 'POST'])
@@ -228,7 +228,7 @@ def add_book(username):
                     flash(f"Book {input_title} not found")
                     return redirect(request.referrer or url_for('add_book', username=current_user.name))
 
-                api_title, authors, cover_url = book_data
+                api_title, authors, genre, cover_url = book_data
                 name_of_author = authors[0] if authors else "Unknown Author"
 
                 author_obj = data_manager.get_entity_by_multiple_fields(Author, author_name=name_of_author)
@@ -240,6 +240,7 @@ def add_book(username):
                 new_book = Book(
                     title=api_title,
                     author_id=author_obj.author_id,
+                    genre = genre,
                     cover_url=cover_url
                 )
 

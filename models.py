@@ -36,6 +36,7 @@ class Book(db.Model):
     book_id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
     title: Mapped[str] = mapped_column(String, nullable=False)
     author_id: Mapped[int] = mapped_column(Integer, ForeignKey('authors.author_id', ondelete='CASCADE'), nullable=False)
+    genre: Mapped[str] = mapped_column(String, nullable=True)
     cover_url: Mapped[str] = mapped_column(String, nullable=True)
 
     list_of_readers: Mapped[List["UserBooks"]] = relationship(back_populates="reading_book")

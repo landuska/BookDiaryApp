@@ -3,6 +3,7 @@
 {% block title %}Books by {{ author.author_name }}{% endblock %}
 
 {% block content %}
+{% set my_book_ids = current_user.list_of_reading_books | map(attribute='book_id') | list %}
 <div class="container py-5">
     <div class="row mb-4">
         <div class="col-12">
@@ -28,7 +29,21 @@
         {% if books %}
         {% for book in books %}
         <div class="col-lg-2 col-md-3 col-sm-4 col-6 mb-4">
-            <div class="card border-0 shadow-sm h-100" style="border-radius: 12px; overflow: hidden;">
+                        <div class="card border-0 shadow-sm h-100 position-relative">
+
+{% if current_user.is_authenticated and (book.book_id in my_book_ids) %}
+
+<a href="{{ url_for('user_book_info',
+                     user_id=current_user.id,
+                     book_id=book.book_id) }}"
+   class="stretched-link"></a>
+
+{% else %}
+
+<a href="{{ url_for('book_public', book_id=book.book_id) }}"
+   class="stretched-link"></a>
+
+{% endif %}
                 <div style="height: 180px; background-color: #f0f0f0;">
                     {% if book.cover_url %}
                     <img src="{{ book.cover_url }}"
@@ -47,14 +62,23 @@
                         {{ book.title }}
                     </h6>
                     <div class="mt-auto">
-                        {% if current_user.is_authenticated %}
-                        <form action="{{ url_for('add_book', username=current_user.name) }}" method="POST">
-                            <input type="hidden" name="title" value="{{ book.title }}">
-                            <button type="submit" class="btn btn-sm btn-primary w-100" style="font-size: 0.7rem;">
-                                + Add to my books
-                            </button>
-                        </form>
-                        {% else %}
+                        {% if current_user.is_authenticated%}
+                            {%if  book.book_id in my_book_ids%}
+                                <a href="{{ url_for('user_book_info',
+                                     user_id=current_user.id,
+                                     book_id=book.book_id) }}"
+                                   class="btn btn-sm btn-outline-success w-100"
+                                   style="font-size: 0.7rem; border-color: #d1e7dd; background-color: #f8fff9;">
+                                    <i class="bi bi-check2"></i> In My Library
+                                </a>
+                            {% else %}
+                                <form action="{{ url_for('add_book', username=current_user.name) }}" method="POST">
+                                    <input type="hidden" name="title" value="{{ book.title }}">
+                                    <button type="submit" class="btn btn-sm btn-primary w-100" style="font-size: 0.7rem;">
+                                        + Add to my books
+                                    </button>
+                                </form>       {% endif %}
+                            {% else %}
                         <a href="{{ url_for('index') }}" class="btn btn-sm btn-outline-secondary w-100"
                            style="font-size: 0.7rem;">
                             Login to add

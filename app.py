@@ -1,9 +1,11 @@
-from flask import Flask, render_template, request, redirect,  url_for, flash
+from flask import Flask, render_template, request, redirect,  url_for, flash, jsonify
 from flask_login import LoginManager, login_user, logout_user, login_required, current_user
 from sqlalchemy.exc import SQLAlchemyError
 from models import *
 from data_manage import DataManager
 from helpers import *
+from openai_helpers import *
+
 
 app = Flask(__name__)
 
@@ -44,6 +46,17 @@ def all_books():
             genres.add(book.genre)
     list_of_genres = sorted(list(genres))
     return render_template('books.html', books=filtered_books,genres=list_of_genres, selected_genre=genre)
+
+
+@app.route('/books/<int:book_id>', methods=['GET'])
+def book_public(book_id):
+
+    book = data_manager.get_entity_by_id(Book, book_id)
+
+    return render_template(
+        "book_public.html",
+        book=book
+    )
 
 
 # *************** AUTHORS *************
@@ -234,31 +247,32 @@ def add_book(username):
         try:
             book_obj = data_manager.get_entity_by_multiple_fields(Book, title=input_title)
             if not book_obj:
-                book_data = get_book_info(input_title)
+                api_book_data = get_book_info(input_title)
 
-                if not book_data:
+                if not api_book_data:
                     flash(f"Book {input_title} not found")
                     return redirect(request.referrer or url_for('add_book', username=current_user.name))
 
-                api_title, authors, genres, cover_url = book_data
-                name_of_author = authors[0] if authors else None
-                genre = genres[0] if genres else None
-
+                name_of_author = api_book_data.get('author')
                 author_obj = data_manager.get_entity_by_multiple_fields(Author, author_name=name_of_author)
 
                 if not author_obj:
                     data_manager.add_author(name=name_of_author)
-                    author_obj = data_manager.get_entity_by_multiple_fields(Author, author_name=name_of_author)
+
+                author_obj = data_manager.get_entity_by_multiple_fields(Author, author_name=name_of_author)
 
                 new_book = Book(
-                    title=api_title,
+                    isbn=api_book_data.get("isbn", ""),
+                    description=api_book_data.get("description", ""),
+                    title=api_book_data.get("title", ""),
                     author_id=author_obj.author_id,
-                    genre = genre,
-                    cover_url=cover_url
+                    genre=api_book_data.get("genre", ""),
+                    cover_url=api_book_data.get("cover_url", "")
                 )
 
                 data_manager.add_book(new_book)
-                book_obj = data_manager.get_entity_by_multiple_fields(Book, title=api_title)
+
+                book_obj = data_manager.get_entity_by_multiple_fields(Book, isbn=new_book.isbn)
 
             user_book = UserBooks(
                 user_id=current_user.id,

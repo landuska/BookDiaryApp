@@ -48,15 +48,19 @@ def all_books():
     return render_template('books.html', books=filtered_books,genres=list_of_genres, selected_genre=genre)
 
 
-@app.route('/books/<int:book_id>', methods=['GET'])
+@app.route('/books/<int:book_id>', methods=['GET', 'POST'])
 def book_public(book_id):
-
     book = data_manager.get_entity_by_id(Book, book_id)
+    summary = None
 
-    return render_template(
-        "book_public.html",
-        book=book
-    )
+    if request.method == 'POST':
+        summary = get_ai_summary(
+            book.title,
+            book.author_of_book.author_name
+        ).strip()
+        return render_template("book_public.html", book=book, summary=summary)
+
+    return render_template("book_public.html",book=book, summary=summary)
 
 
 # *************** AUTHORS *************
@@ -308,7 +312,7 @@ def confirm_add_book(username):
     return redirect(request.referrer or url_for('add_book', username=current_user.name))
 
 
-@app.route('/<int:user_id>/user_books/<int:book_id>', methods=['GET'])
+@app.route('/<int:user_id>/user_books/<int:book_id>', methods=['GET', 'POST'])
 @login_required
 def user_book_info(user_id, book_id):
     user_book = data_manager.get_entity_by_multiple_fields(UserBooks, user_id=user_id, book_id=book_id)
@@ -316,7 +320,16 @@ def user_book_info(user_id, book_id):
         flash("Book not found in this library.")
 
     is_owner = (current_user.id == user_id)
-    return render_template('book_info.html', book=user_book, is_owner=is_owner)
+    summary = None
+
+    if request.method == "POST":
+        summary = get_ai_summary(
+            user_book.reading_book.title,
+            user_book.reading_book.author_of_book.author_name
+        ).strip()
+        return render_template('book_info.html', book=user_book, summary=summary, is_owner=is_owner)
+
+    return render_template('book_info.html', book=user_book, summary=summary, is_owner=is_owner)
 
 
 @app.route('/user_books/<int:book_id>/update', methods=['POST'])

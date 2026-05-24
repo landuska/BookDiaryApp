@@ -26,7 +26,7 @@
                      class="mb-3 mx-auto d-block"
                      style="height: 180px; width: auto; object-fit: contain; border-radius: 10px;">
                 {% else %}
-                    <div class="d-flex align-items-center justify-content-center h-100 text-muted small">No Cover</div>
+                <div class="d-flex align-items-center justify-content-center h-100 text-muted small">No Cover</div>
                 {% endif %}
 
 
@@ -43,19 +43,28 @@
 
 
                 {% if current_user.is_authenticated %}
+                <div class="border-top pt-3 mt-3">
+                    <form action="{{ url_for('book_public', book_id=book.book_id) }}" method="POST">
+                        <button type="submit"
+                                class="btn btn-outline-primary w-100 mt-3"
+                                style="border-radius: 12px;">
+                            Generate AI Summary
+                        </button>
+                    </form>
+                </div>
+                <div class="border-top pt-3 mt-3">
+                    <form action="{{ url_for('add_book', username=current_user.name) }}"
+                          method="POST">
 
-                <form action="{{ url_for('add_book', username=current_user.name) }}"
-                      method="POST">
+                        <input type="hidden" name="title" value="{{ book.title }}">
 
-                    <input type="hidden" name="title" value="{{ book.title }}">
+                        <button class="btn btn-primary w-100 fw-bold"
+                                style="border-radius: 12px;">
+                            + Add to My Library
+                        </button>
 
-                    <button class="btn btn-primary w-100 fw-bold"
-                            style="border-radius: 12px;">
-                        + Add to My Library
-                    </button>
-
-                </form>
-
+                    </form>
+                </div>
                 {% else %}
 
                 <a href="{{ url_for('login') }}"
@@ -71,5 +80,30 @@
 
     </div>
 </div>
+{% if summary %}
+<div class="modal fade" id="summaryModal" tabindex="-1" aria-labelledby="summaryModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+        <div class="modal-content border-0 shadow" style="border-radius: 20px; overflow: hidden;">
+            <div class="modal-header bg-primary text-white border-0 py-3">
+                <h5 class="modal-title fw-bold" id="summaryModalLabel">AI Book Summary</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"
+                        aria-label="Close"></button>
+            </div>
+            <div class="modal-body p-4" style="max-height: 70vh; overflow-y: auto;">
+                <h4 class="fw-bold mb-1">{{ book.title }}</h4>
+                <p class="text-muted small mb-4">by {{ book.author_of_book.author_name }}</p>
 
+                <div class="p-3 rounded"
+                     style="background-color: #f8f9fa; line-height: 1.7; white-space: pre-wrap; font-size: 1rem;">{{ summary }}</div>
+            </div>
+        </div>
+    </div>
+</div>
+<script>
+    document.addEventListener("DOMContentLoaded", function() {
+        var myModal = new bootstrap.Modal(document.getElementById('summaryModal'));
+        myModal.show();
+    });
+</script>
+{% endif %}
 {% endblock %}

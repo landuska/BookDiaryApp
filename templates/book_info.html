@@ -27,7 +27,7 @@
     .notes-box {
         background-color: #fcfcfc;
         border: 1px solid #eee;
-        min-height: 120px;
+        min-height: 80px;
         white-space: pre-wrap;
         word-wrap: break-word;
     }
@@ -54,20 +54,33 @@
             <div class="card border-0 shadow-sm text-center p-4" style="border-radius: 20px;">
                 <div class="mb-3">
                     {% if book.reading_book.cover_url %}
-                    <img src="{{ book.reading_book.cover_url }}" class="img-fluid rounded shadow" style="max-height: 350px;">
-{% else %}
+                    <img src="{{ book.reading_book.cover_url }}" class="img-fluid rounded shadow"
+                         style="max-height: 350px;">
+                    {% else %}
                     <div class="d-flex align-items-center justify-content-center h-100 text-muted small">No Cover</div>
                     {% endif %}
                 </div>
                 <h4 class="fw-bold mb-1">{{ book.reading_book.title }}</h4>
                 <p class="text-primary">{{ book.reading_book.author_of_book.author_name }}</p>
+                <div class="border-top pt-3 mt-3">
+                    <form method="POST">
+                        <button type="submit"
+                                class="btn btn-outline-primary w-100 mt-3"
+                                style="border-radius: 12px;">
+                            Generate AI Summary
+                        </button>
+                    </form>
+                </div>
 
                 {% if not is_owner %}
+
                 <div class="border-top pt-3 mt-3">
 
                     <form action="{{ url_for('add_book', username=current_user.name) }}" method="POST">
                         <input type="hidden" name="title" value="{{ book.reading_book.title }}">
-                        <button type="submit" class="btn btn-outline-primary w-100 fw-bold" style="border-radius: 12px;">
+
+                        <button type="submit" class="btn btn-outline-primary w-100 fw-bold"
+                                style="border-radius: 12px;">
                             + Add to My Library
                         </button>
                     </form>
@@ -81,7 +94,7 @@
 
             {% if is_owner %}
             <form action="{{ url_for('update_book_info', book_id=book.book_id) }}" method="POST">
-            {% endif %}
+                {% endif %}
                 <div class="card border-0 shadow-sm p-4 p-lg-5" style="border-radius: 20px;">
 
                     <div class="mb-4">
@@ -94,9 +107,12 @@
                             {% if is_owner %}
                             <div class="input-field mt-2">
                                 <select name="status" class="form-select border-primary">
-                                    <option value="Currently reading" {% if book.status == 'Currently reading' %}selected{% endif %}>Currently reading</option>
-                                    <option value="Completed" {% if book.status == 'Completed' %}selected{% endif %}>Completed</option>
-                                    <option value="Want to read" {% if book.status == 'Want to read' %}selected{% endif %}>Want to read</option>
+                                    <option value="Currently reading" {% if book.status==
+                                    'Currently reading' %}selected{% endif %}>Currently reading</option>
+                                    <option value="Completed" {% if book.status==
+                                    'Completed' %}selected{% endif %}>Completed</option>
+                                    <option value="Want to read" {% if book.status==
+                                    'Want to read' %}selected{% endif %}>Want to read</option>
                                 </select>
                             </div>
                             {% endif %}
@@ -112,7 +128,8 @@
                             </label>
                             {% if is_owner %}
                             <div class="input-field mt-2">
-                                <input type="number" name="rating" step="0.5" min="0" max="10" class="form-control border-primary" value="{{ book.rating or '' }}">
+                                <input type="number" name="rating" step="0.5" min="0" max="10"
+                                       class="form-control border-primary" value="{{ book.rating or '' }}">
                             </div>
                             {% endif %}
                         </div>
@@ -125,15 +142,16 @@
                             <label for="edit-note" class="display-area d-block">
                                 <div class="notes-box p-3 rounded">
                                     {% if book.note and book.note.strip() %}
-                                        {{ book.note }}
+                                    {{ book.note }}
                                     {% else %}
-                                        <span class="text-muted">No notes yet.</span>
+                                    <span class="text-muted">No notes yet.</span>
                                     {% endif %}
                                 </div>
                             </label>
                             {% if is_owner %}
                             <div class="input-field mt-2">
-                                <textarea name="note" class="form-control border-primary" rows="8">{{ book.note or '' }}</textarea>
+                                <textarea name="note" class="form-control border-primary"
+                                          rows="8">{{ book.note or '' }}</textarea>
                             </div>
                             {% endif %}
                         </div>
@@ -147,11 +165,36 @@
                     </div>
                     {% endif %}
                 </div>
-            {% if is_owner %}
+                {% if is_owner %}
             </form>
             {% endif %}
         </div>
     </div>
     {% endif %}
 </div>
+{% if summary %}
+<div class="modal fade" id="summaryModal" tabindex="-1" aria-labelledby="summaryModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+        <div class="modal-content border-0 shadow" style="border-radius: 20px; overflow: hidden;">
+            <div class="modal-header bg-primary text-white border-0 py-3">
+                <h5 class="modal-title fw-bold" id="summaryModalLabel">AI Book Summary</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body p-4" style="max-height: 70vh; overflow-y: auto;">
+                <h4 class="fw-bold mb-1">{{ book.reading_book.title }}</h4>
+                <p class="text-muted small mb-4">by {{ book.reading_book.author_of_book.author_name }}</p>
+
+                <div class="p-3 rounded" style="background-color: #f8f9fa; line-height: 1.7; white-space: pre-wrap; font-size: 1rem;">{{ summary }}</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    document.addEventListener("DOMContentLoaded", function() {
+        var myModal = new bootstrap.Modal(document.getElementById('summaryModal'));
+        myModal.show();
+    });
+</script>
+{% endif %}
 {% endblock %}

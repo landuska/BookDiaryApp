@@ -32,36 +32,41 @@
 
     <div class="row">
         {% if communities %}
-        {% for community in communities %}
-        <div class="col-md-6 col-lg-4 mb-4">
-            <div class="card border-0 shadow-sm h-100 transition-card" style="border-radius: 20px; overflow: hidden;">
+{% for community in communities %}
+<div class="col-md-6 col-lg-4 mb-4">
+    <div class="card border-0 shadow-sm h-100 position-relative"
+         style="border-radius: 16px; overflow: hidden; background: #ffffff; transition: transform 0.2s ease, box-shadow 0.2s ease;">
 
-                <div style="height: 6px; background: linear-gradient(90deg, #0d6efd, #6610f2);"></div>
+        <div style="height: 5px; background: linear-gradient(90deg, #0d6efd, #6610f2);"></div>
 
-                <div class="card-body p-4">
-                    <div class="d-flex justify-content-between align-items-start mb-3">
-                        <div class="bg-light rounded-3 p-3 text-primary d-flex align-items-center justify-content-center"
-                             style="width: 50px; height: 50px; font-size: 1.2rem;">
-                            👥
-                        </div>
-                        <span class="badge bg-light text-primary rounded-pill px-3 py-2" style="font-size: 0.75rem;">
-                                {{ community.user_community.list_of_members | length }} members
-                            </span>
-                    </div>
-
-                    <h4 class="fw-bold mb-2">{{ community.community_name }}</h4>
-                    <p class="text-muted small mb-4">Sharing thoughts and reading goals together.</p>
-
-                    <div class="d-grid">
-                        <a href="{{ url_for('community_info', community_id=community.community_id) }}"
-                           class="btn btn-outline-primary fw-bold py-2" style="border-radius: 10px;">
-                            Enter Club
-                        </a>
-                    </div>
+        <div class="card-body p-4 d-flex flex-column justify-content-between">
+            <div>
+                <div class="d-flex justify-content-between align-items-start gap-2 mb-3">
+                    <h5 class="text-dark fw-bold mb-0 text-truncate" style="font-size: 1.25rem;" title="{{ community.user_community.community_name }}">
+                        {{ community.user_community.community_name }}
+                    </h5>
+                    <span class="badge bg-light text-primary rounded-pill px-2.5 py-2 flex-shrink-0 d-flex align-items-center gap-1"
+                          style="font-size: 0.75rem; font-weight: 600;">
+                        <i class="bi bi-people-fill"></i> {{ community.user_community.list_of_members | length }} members
+                    </span>
                 </div>
+
+                <p class="text-muted small mb-4" style="line-height: 1.5;">
+                    Sharing thoughts and reading goals together.
+                </p>
+            </div>
+
+            <div class="d-grid mt-auto">
+                <a href="{{ url_for('community_info', community_id=community.community_id) }}"
+                   class="btn btn-primary fw-semibold py-2.5"
+                   style="border-radius: 12px; background: linear-gradient(135deg, #0d6efd, #0a58ca); border: none; transition: all 0.2s;">
+                    Enter Club
+                </a>
             </div>
         </div>
-        {% endfor %}
+    </div>
+</div>
+{% endfor %}
         {% else %}
         <div class="col-12 text-center py-5">
             <div class="bg-light border-0 py-5 px-4 mx-auto"

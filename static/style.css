@@ -1,0 +1,120 @@
+:root {
+    --geo-dark-blue: #0c5784;
+    --geo-light-blue: #59b2db;
+    --geo-orange: #f48c42;
+    --geo-bg-clean: #ffffff;
+    --geo-pastel: #aed1d6;
+}
+
+
+body {
+    background-color: var(--geo-bg-clean);
+    color: var(--geo-dark-blue);
+    font-family: 'Segoe UI', Roboto, sans-serif;
+}
+
+
+.navbar-geo {
+    background-color: var(--geo-dark-blue);
+    padding: 1rem 0;
+    border-bottom: 4px solid var(--geo-orange);
+}
+.navbar-geo .navbar-brand {
+    color: #ffffff !important;
+    font-weight: 800;
+    letter-spacing: 1px;
+}
+.navbar-geo .nav-link {
+    color: #ffffff !important;
+    font-weight: 600;
+    opacity: 0.85;
+    transition: all 0.2s ease;
+}
+.navbar-geo .nav-link:hover {
+    opacity: 1;
+    color: var(--geo-orange) !important;
+}
+
+
+.navbar-geo .user-highlight {
+    color: #ffffff !important;
+    background-color: var(--geo-orange);
+    border-radius: 20px;
+    padding: 0.4rem 1rem !important;
+    opacity: 1 !important;
+}
+.navbar-geo .user-highlight:hover {
+    background-color: var(--geo-light-blue);
+    color: var(--geo-dark-blue) !important;
+}
+
+
+.dropdown-geo-menu {
+    background-color: #ffffff;
+    border: 2px solid var(--geo-dark-blue);
+    box-shadow: 0 8px 24px rgba(12, 87, 132, 0.15);
+}
+.dropdown-geo-menu .dropdown-item {
+    color: var(--geo-dark-blue);
+    font-weight: 600;
+}
+.dropdown-geo-menu .dropdown-item:hover {
+    background-color: var(--geo-light-blue);
+    color: #ffffff;
+}
+
+
+.alert-geo {
+    background-color: var(--geo-dark-blue);
+    color: #ffffff;
+    border: none;
+    border-left: 6px solid var(--geo-orange);
+    border-radius: 6px;
+}
+.alert-geo .btn-close {
+    filter: invert(1);
+}
+
+
+.geo-page-title {
+    color: var(--geo-dark-blue);
+    border-bottom: 3px solid var(--geo-orange);
+    padding-bottom: 10px;
+    font-weight: 700;
+    margin-top: 2rem;
+    margin-bottom: 1.5rem;
+}
+
+
+.geo-card {
+    background-color: #ffffff;
+    border: 2px solid var(--geo-dark-blue);
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+    transition: transform 0.2s;
+}
+.geo-card:hover {
+    transform: translateY(-3px);
+    border-color: var(--geo-light-blue);
+}
+
+
+.btn-geo-primary {
+    background-color: var(--geo-orange) !important;
+    color: white !important;
+    font-weight: bold !important;
+    border: none !important;
+}
+.btn-geo-primary:hover {
+    background-color: var(--geo-dark-blue) !important;
+}
+
+.btn-geo-secondary {
+    background-color: var(--geo-dark-blue) !important;
+    color: white !important;
+    font-weight: 600 !important;
+    border: none !important;
+}
+.btn-geo-secondary:hover {
+    background-color: var(--geo-light-blue) !important;
+}

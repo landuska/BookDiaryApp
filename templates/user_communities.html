@@ -8,89 +8,84 @@
     <div class="row mb-4">
         <div class="col-12">
             <a href="{{ url_for('user_page', username=current_user.name) }}"
-               class="btn btn-link text-decoration-none text-muted p-0">
+               class="text-decoration-none text-muted">
                 &larr; Back to Dashboard
             </a>
         </div>
     </div>
 
-
-    <div class="row align-items-end mb-5">
+    <div class="row align-items-center mb-4">
         <div class="col-md-8">
-            <h1 class="fw-bold display-5 mb-1">My Book Clubs</h1>
-            <p class="text-muted mb-0">Clubs you have joined or created.</p>
+            <h1 class="geo-page-title">My Book Clubs</h1>
+            <p class="text-muted">Clubs you have joined or created.</p>
         </div>
+
         <div class="col-md-4 text-md-end mt-3 mt-md-0">
             <a href="{{ url_for('create_community') }}"
-               class="btn btn-primary d-inline-flex align-items-center shadow-sm fw-bold px-4 py-2"
-               style="border-radius: 12px; transition: all 0.2s;">
-                <i class="bi bi-plus-lg me-2"></i> Create Club
+               class="btn btn-geo-primary px-4 py-2 fw-bold"
+               style="border-radius: 12px;">
+                + Create Club
             </a>
         </div>
     </div>
 
-
     <div class="row">
         {% if communities %}
-{% for community in communities %}
-<div class="col-md-6 col-lg-4 mb-4">
-    <div class="card border-0 shadow-sm h-100 position-relative"
-         style="border-radius: 16px; overflow: hidden; background: #ffffff; transition: transform 0.2s ease, box-shadow 0.2s ease;">
+        {% for community in communities %}
 
-        <div style="height: 5px; background: linear-gradient(90deg, #0d6efd, #6610f2);"></div>
+        <div class="col-md-4 col-lg-3 mb-3">
 
-        <div class="card-body p-4 d-flex flex-column justify-content-between">
-            <div>
-                <div class="d-flex justify-content-between align-items-start gap-2 mb-3">
-                    <h5 class="text-dark fw-bold mb-0 text-truncate" style="font-size: 1.25rem;" title="{{ community.user_community.community_name }}">
+            <div class="card border-0 shadow-sm h-100 transition-card"
+                 style="border-radius: 16px;">
+
+                <div class="card-body text-center p-3">
+
+                    <div class="mb-3">
+                        <img src="https://api.dicebear.com/9.x/shapes/svg?seed={{ community.user_community.community_name }}"
+                             width="48" height="48"
+                             style="border-radius: 12px;">
+                    </div>
+
+                    <h6 class="fw-bold mb-2" style="color: var(--geo-dark-blue);">
                         {{ community.user_community.community_name }}
-                    </h5>
-                    <span class="badge bg-light text-primary rounded-pill px-2.5 py-2 flex-shrink-0 d-flex align-items-center gap-1"
-                          style="font-size: 0.75rem; font-weight: 600;">
-                        <i class="bi bi-people-fill"></i> {{ community.user_community.list_of_members | length }} members
-                    </span>
+                    </h6>
+
+                    <p class="text-muted small mb-3" style="font-size: 0.75rem;">
+                        {{ community.user_community.list_of_members | length }} members
+                    </p>
+
+                    <a href="{{ url_for('community_info', community_id=community.community_id) }}"
+                       class="btn btn-geo-primary btn-sm w-100"
+                       style="border-radius: 12px; font-size: 0.75rem;">
+                        Enter Club
+                    </a>
+
                 </div>
-
-                <p class="text-muted small mb-4" style="line-height: 1.5;">
-                    Sharing thoughts and reading goals together.
-                </p>
             </div>
 
-            <div class="d-grid mt-auto">
-                <a href="{{ url_for('community_info', community_id=community.community_id) }}"
-                   class="btn btn-primary fw-semibold py-2.5"
-                   style="border-radius: 12px; background: linear-gradient(135deg, #0d6efd, #0a58ca); border: none; transition: all 0.2s;">
-                    Enter Club
-                </a>
-            </div>
         </div>
-    </div>
-</div>
-{% endfor %}
+
+        {% endfor %}
         {% else %}
+
         <div class="col-12 text-center py-5">
-            <div class="bg-light border-0 py-5 px-4 mx-auto"
-                 style="border-radius: 25px; border: 2px dashed #dee2e6 !important; max-width: 600px;">
-                <div class="display-1 mb-3 text-muted" style="opacity: 0.3;">📂</div>
-                <h3 class="fw-bold">No clubs found</h3>
-                <p class="text-muted mb-4">You haven't joined or created any clubs yet.</p>
-                <a href="{{ url_for('all_communities') }}" class="btn btn-primary px-4 py-2 fw-bold"
-                   style="border-radius: 12px;">Explore All Clubs</a>
-            </div>
+            <p class="text-muted">No clubs yet</p>
+            <a href="{{ url_for('all_communities') }}" class="btn btn-geo-secondary">
+                Explore clubs
+            </a>
         </div>
+
         {% endif %}
     </div>
 </div>
 
 <style>
     .transition-card {
-        transition: all 0.3s ease;
-        border: 1px solid transparent !important;
+        transition: all 0.25s ease;
     }
     .transition-card:hover {
-        transform: translateY(-10px);
-        box-shadow: 0 1rem 3rem rgba(0,0,0,0.1) !important;
-        border-color: rgba(13, 110, 253, 0.2) !important;
+        transform: translateY(-5px);
     }
 </style>
+
 {% endblock %}

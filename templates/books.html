@@ -4,120 +4,175 @@
 
 {% block content %}
 {% set my_book_ids = current_user.list_of_reading_books | map(attribute='book_id') | list %}
+
 <div class="container py-5">
+
     <div class="row mb-4">
         <div class="col-12">
-            <a href="{{ url_for('index') }}" class="btn btn-link text-decoration-none text-muted p-0">
+            <a href="{{ url_for('index') }}"
+               class="btn btn-link text-decoration-none p-0"
+               style="color: var(--geo-dark-blue);">
                 &larr; Back to Home
             </a>
         </div>
     </div>
-    <h2 class="fw-bold mb-4">Library</h2>
-    <div class="card border-0 shadow-sm mb-4" style="border-radius: 15px; background: #f8f9fa;">
+
+    <h2 class="fw-bold mb-4" style="color: var(--geo-dark-blue);">
+        Library
+    </h2>
+
+    <div class="card border-0 shadow-sm mb-4"
+         style="border-radius: 15px; background: #ffffff; border: 2px solid var(--geo-pastel);">
         <div class="card-body py-2 px-3">
 
-            <form method="GET" action="{{ url_for('all_books') }}"
+            <form method="GET"
+                  action="{{ url_for('all_books') }}"
                   class="d-flex align-items-center gap-2 flex-wrap">
 
                 <div class="d-flex align-items-center gap-2 flex-grow-1">
-                    <label class="small fw-bold text-muted mb-0" style="font-size: 0.65rem;">
+                    <label class="small fw-bold mb-0"
+                           style="font-size: 0.65rem; color: var(--geo-dark-blue);">
                         Genre:
                     </label>
 
                     <select name="genre"
-                            class="form-select form-select-sm border-0 shadow-sm"
-                            style="border-radius: 8px;">
+                            class="form-select form-select-sm shadow-sm"
+                            style="border-radius: 8px; border: 1px solid var(--geo-pastel);">
 
-                        <option value="All">All</option>
+                        <option value="None"
+                                {% if current_genre|string==
+                        'None' or not current_genre %}selected{% endif %}>
+                        All Genres
+                        </option>
 
                         {% for g in genres %}
-                        <option value="{{ g }}" {% if current_genre== g %}selected{% endif %}>
+                        {% if g is not none and g|string != 'None' and g != '' %}
+                        <option value="{{ g }}"
+                                {% if current_genre|string== g|string %}selected{% endif %}>
                             {{ g }}
                         </option>
+                        {% endif %}
                         {% endfor %}
-
                     </select>
                 </div>
 
                 <button type="submit"
-                        class="btn btn-sm btn-dark px-3 fw-bold"
-                        style="border-radius: 8px;">
+                        class="btn btn-sm fw-bold px-3"
+                        style="background: var(--geo-dark-blue);
+                               color: white;
+                               border-radius: 8px;">
                     Filter
                 </button>
 
             </form>
-
         </div>
     </div>
+
     <div class="row">
         {% for book in books %}
         <div class="col-lg-2 col-md-3 col-sm-4 col-6 mb-4">
-            <div class="card border-0 shadow-sm h-100 position-relative">
+
+            <div class="card border-0 shadow-sm h-100 position-relative"
+                 style="border-radius: 16px; overflow: hidden;">
+
+                <div style="height: 6px;
+                            background: linear-gradient(
+                                90deg,
+                                var(--geo-dark-blue),
+                                var(--geo-light-blue)
+                            );">
+                </div>
 
                 {% if current_user.is_authenticated and (book.book_id in my_book_ids) %}
-
                 <a href="{{ url_for('user_book_info',
                      user_id=current_user.id,
                      book_id=book.book_id) }}"
                    class="stretched-link"></a>
-
                 {% else %}
-
                 <a href="{{ url_for('book_public', book_id=book.book_id) }}"
                    class="stretched-link"></a>
-
                 {% endif %}
-                <div style="height: 180px; background-color: #f8f9fa;">
+
+                <div style="height: 180px; background-color: #ffffff;">
                     {% if book.cover_url %}
-                    <img src="{{ book.cover_url }}" class="card-img-top"
-                         style="width: 100%; height: 100%; object-fit: contain; padding: 5px;">
+                    <img src="{{ book.cover_url }}"
+                         class="card-img-top"
+                         style="width: 100%;
+                                height: 100%;
+                                object-fit: contain;
+                                padding: 5px;">
                     {% else %}
-                    <div class="d-flex align-items-center justify-content-center h-100 text-muted small">No Cover</div>
+                    <div class="d-flex align-items-center justify-content-center h-100 small"
+                         style="color: var(--geo-dark-blue); opacity: 0.6;">
+                        No Cover
+                    </div>
                     {% endif %}
                 </div>
 
                 <div class="card-body p-2 d-flex flex-column">
-                    <h6 class="fw-bold mb-1 text-truncate" style="font-size: 0.85rem;" title="{{ book.title }}">
+
+                    <h6 class="fw-bold mb-1 text-truncate"
+                        style="font-size: 0.85rem; color: var(--geo-dark-blue);"
+                        title="{{ book.title }}">
                         {{ book.title }}
                     </h6>
 
                     <p class="mb-2" style="font-size: 0.75rem;">
                         <a href="{{ url_for('books_by_author', author_id=book.author_id) }}"
-                           class="text-muted text-decoration-none author-link">
+                           class="text-decoration-none author-link"
+                           style="color: var(--geo-orange);">
                             by {{ book.author_of_book.author_name }}
                         </a>
                     </p>
 
                     {% if current_user.is_authenticated %}
                     <div class="mt-auto">
+
                         {% if book.book_id in my_book_ids %}
                         <a href="{{ url_for('update_book_info', book_id=book.book_id) }}"
-                           class="btn btn-sm btn-outline-success w-100 disabled"
-                           style="font-size: 0.7rem; border-color: #d1e7dd; background-color: #f8fff9;">
+                           class="btn btn-sm w-100 disabled"
+                           style="font-size: 0.7rem;
+                                  border: 1px solid var(--geo-pastel);
+                                  background: #f8fffe;
+                                  color: var(--geo-dark-blue);">
                             <i class="bi bi-check2"></i> In My Library
                         </a>
+
                         {% else %}
-                        <form action="{{ url_for('add_book', username=current_user.name) }}" method="POST"
+                        <form action="{{ url_for('add_book', username=current_user.name) }}"
+                              method="POST"
                               class="mt-auto">
-                            <input type="hidden" name="title" value="{{ book.title }}">
-                            <button type="submit" class="btn btn-sm btn-primary w-100" style="font-size: 0.7rem;">
+
+                            <input type="hidden"
+                                   name="title"
+                                   value="{{ book.title }}">
+
+                            <button type="submit"
+                                    class="btn btn-sm w-100"
+                                    style="font-size: 0.7rem;
+                                           background: var(--geo-dark-blue);
+                                           color: white;">
                                 + Add to my books
                             </button>
                         </form>
                         {% endif %}
+
                     </div>
                     {% endif %}
                 </div>
 
-                <style>
-                    .author-link:hover {
-                        color: #0d6efd !important;
-                        text-decoration: underline !important;
-                    }
-                </style>
             </div>
         </div>
         {% endfor %}
     </div>
+
 </div>
+
+<style>
+    .author-link:hover {
+        color: var(--geo-light-blue) !important;
+        text-decoration: underline !important;
+    }
+</style>
+
 {% endblock %}

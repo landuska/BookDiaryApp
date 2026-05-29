@@ -6,18 +6,18 @@
 <div class="container py-5">
     <div class="row justify-content-center">
         <div class="col-md-6">
-            <div class="card shadow-sm border-0" style="border-radius: 15px;">
+            <div class="card geo-card shadow-sm" style="border-radius: 15px;">
                 <div class="card-body p-5">
-                    <h2 class="fw-bold mb-4 text-center">Find a Book</h2>
-
+                    <h2 class="fw-bold mb-4 text-center" style="color: var(--geo-dark-blue);">Find a Book</h2>
                     <form action="{{ url_for('add_book', username=current_user.name) }}" method="POST">
                         <div class="mb-4">
-                            <label class="form-label text-muted fw-semibold">Book Title</label>
+                            <label class="form-label fw-semibold" style="color: var(--geo-dark-blue);">Book Title</label>
                             <input type="text" name="title" class="form-control form-control-lg"
-                                   placeholder="e.g. The Great Gatsby" required style="border-radius: 10px;">
+                                   placeholder="e.g. The Great Gatsby" required
+                                   style="border-radius: 10px; border: 2px solid var(--geo-dark-blue);">
                         </div>
                         <div class="d-grid">
-                            <button type="submit" class="btn btn-primary btn-lg shadow-sm" style="border-radius: 10px;">
+                            <button type="submit" class="btn btn-geo-primary btn-lg shadow-sm" style="border-radius: 10px;">
                                 Search & Add to Library
                             </button>
                         </div>
@@ -26,7 +26,7 @@
             </div>
             <div class="text-center mt-3">
                 <a href="{{ url_for('user_books', username=current_user.name) }}"
-                   class="text-decoration-none text-muted small">← Back to My Library</a>
+                   class="text-decoration-none fw-semibold small" style="color: var(--geo-dark-blue);">← Back to My Library</a>
             </div>
         </div>
     </div>

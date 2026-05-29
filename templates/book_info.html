@@ -1,145 +1,210 @@
 {% extends "base.html" %}
 
 {% block content %}
-<style>
-    {% if not is_owner %}
-    .display-area {
-        pointer-events: none;
-        cursor: default !important;
-    }
-    .display-area:hover {
-        background-color: transparent !important;
-    }
-    {% endif %}
-    .edit-toggle { display: none; }
-    .input-field { display: none; }
-    .edit-toggle:checked + .display-area { display: none; }
-    .edit-toggle:checked + .display-area + .input-field { display: block; }
-
-    .display-area {
-        cursor: pointer;
-        padding: 10px;
-        border-radius: 12px;
-        transition: background 0.2s;
-    }
-    .display-area:hover { background-color: #f8f9fa; }
-
-    .notes-box {
-        background-color: #fcfcfc;
-        border: 1px solid #eee;
-        min-height: 80px;
-        white-space: pre-wrap;
-        word-wrap: break-word;
-    }
-</style>
 
 <div class="container py-5">
     <div class="mb-4">
         {% if is_owner %}
         <a href="{{ url_for('user_books', username=current_user.name) }}"
-           class="btn btn-link text-decoration-none text-muted p-0">
+           class="btn btn-link text-decoration-none p-0"
+           style="color: var(--geo-dark-blue);">
             &larr; Back to My Library
         </a>
         {% else %}
-        <a href="javascript:history.back()" class="btn btn-link text-decoration-none text-muted p-0">
+        <a href="javascript:history.back()"
+           class="btn btn-link text-decoration-none p-0"
+           style="color: var(--geo-dark-blue);">
             &larr; Back
         </a>
         {% endif %}
     </div>
 
     {% if book %}
+
     <div class="row g-4">
 
         <div class="col-lg-4">
-            <div class="card border-0 shadow-sm text-center p-4" style="border-radius: 20px;">
+
+            <div class="card border-0 shadow-sm text-center p-4"
+                 style="border-radius: 20px;
+                        background: #ffffff;
+                        border: 2px solid var(--geo-pastel);">
+
                 <div class="mb-3">
+
                     {% if book.reading_book.cover_url %}
-                    <img src="{{ book.reading_book.cover_url }}" class="img-fluid rounded shadow"
-                         style="max-height: 350px;">
+
+                    <img src="{{ book.reading_book.cover_url }}"
+                         class="img-fluid rounded"
+                         style="max-height: 320px;
+                                border: 1px solid var(--geo-pastel);">
+
                     {% else %}
-                    <div class="d-flex align-items-center justify-content-center h-100 text-muted small">No Cover</div>
+
+                    <div class="text-muted small py-5">
+                        No Cover
+                    </div>
+
                     {% endif %}
+
                 </div>
-                <h4 class="fw-bold mb-1">{{ book.reading_book.title }}</h4>
-                <p class="text-primary">{{ book.reading_book.author_of_book.author_name }}</p>
-                <div class="border-top pt-3 mt-3">
-                    <form method="POST">
-                        <button type="submit"
-                                class="btn btn-outline-primary w-100 mt-3"
-                                style="border-radius: 12px;">
-                            Generate AI Summary
-                        </button>
-                    </form>
-                </div>
+
+                <h4 class="fw-bold mb-1"
+                    style="color: var(--geo-dark-blue);">
+                    {{ book.reading_book.title }}
+                </h4>
+
+                <p class="mb-3"
+                   style="color: var(--geo-orange);">
+                    {{ book.reading_book.author_of_book.author_name }}
+                </p>
+
+                <form method="POST">
+                    <button type="submit"
+                            class="btn w-100 mb-2 fw-bold"
+                            style="border-radius: 12px;
+                                   background: #f8f9fa;
+                                   border: 1px solid var(--geo-pastel);
+                                   color: var(--geo-dark-blue);">
+                        ✨ Generate AI Summary
+                    </button>
+                </form>
 
                 {% if not is_owner %}
 
-                <div class="border-top pt-3 mt-3">
+                <form action="{{ url_for('add_book', username=current_user.name) }}"
+                      method="POST">
 
-                    <form action="{{ url_for('add_book', username=current_user.name) }}" method="POST">
-                        <input type="hidden" name="title" value="{{ book.reading_book.title }}">
+                    <input type="hidden"
+                           name="title"
+                           value="{{ book.reading_book.title }}">
 
-                        <button type="submit" class="btn btn-outline-primary w-100 fw-bold"
-                                style="border-radius: 12px;">
-                            + Add to My Library
-                        </button>
-                    </form>
-                </div>
+                    <button type="submit"
+                            class="btn btn-geo-primary w-100 fw-bold"
+                            style="border-radius: 12px;">
+                        + Add to My Library
+                    </button>
+
+                </form>
+
                 {% endif %}
-            </div>
-        </div>
 
+            </div>
+
+        </div>
 
         <div class="col-lg-8">
 
             {% if is_owner %}
-            <form action="{{ url_for('update_book_info', book_id=book.book_id) }}" method="POST">
+            <form action="{{ url_for('update_book_info', book_id=book.book_id) }}"
+                  method="POST">
                 {% endif %}
-                <div class="card border-0 shadow-sm p-4 p-lg-5" style="border-radius: 20px;">
+
+                <div class="card border-0 shadow-sm p-4 p-lg-5"
+                     style="border-radius: 20px;
+                        background: #ffffff;
+                        border: 2px solid var(--geo-pastel);">
 
                     <div class="mb-4">
-                        <label class="text-muted small fw-bold text-uppercase">Status</label>
+
+                        <label class="small fw-bold text-uppercase"
+                               style="color: var(--geo-dark-blue);">
+                            Status
+                        </label>
+
                         <div class="edit-wrapper">
-                            <input type="checkbox" id="edit-status" class="edit-toggle">
-                            <label for="edit-status" class="display-area d-block">
-                                <span class="badge bg-primary px-3 py-2">{{ book.status or 'Want to read' }}</span>
+
+                            <input type="checkbox"
+                                   id="edit-status"
+                                   class="edit-toggle">
+
+                            <label for="edit-status"
+                                   class="display-area d-block">
+
+                            <span class="badge"
+                                  style="background: var(--geo-dark-blue);
+                                         color: white;
+                                         padding: 8px 14px;
+                                         border-radius: 10px;">
+                                {{ book.status or 'Want to read' }}
+                            </span>
+
                             </label>
+
                             {% if is_owner %}
+
                             <div class="input-field mt-2">
-                                <select name="status" class="form-select border-primary">
-                                    <option value="Currently reading" {% if book.status==
-                                    'Currently reading' %}selected{% endif %}>Currently reading</option>
-                                    <option value="Completed" {% if book.status==
-                                    'Completed' %}selected{% endif %}>Completed</option>
-                                    <option value="Want to read" {% if book.status==
-                                    'Want to read' %}selected{% endif %}>Want to read</option>
+                                <select name="status"
+                                        class="form-select"
+                                        style="border: 1px solid var(--geo-pastel);">
+                                    <option value="Currently reading">Currently reading</option>
+                                    <option value="Completed">Completed</option>
+                                    <option value="Want to read">Want to read</option>
                                 </select>
                             </div>
+
                             {% endif %}
                         </div>
+
                     </div>
 
                     <div class="mb-4">
-                        <label class="text-muted small fw-bold text-uppercase">Rating</label>
+
+                        <label class="small fw-bold text-uppercase"
+                               style="color: var(--geo-dark-blue);">
+                            Rating
+                        </label>
+
                         <div class="edit-wrapper">
-                            <input type="checkbox" id="edit-rating" class="edit-toggle">
-                            <label for="edit-rating" class="display-area d-block">
-                                <span class="fs-4 fw-bold text-warning">⭐ {{ book.rating or 'No rating' }}</span>
+
+                            <input type="checkbox"
+                                   id="edit-rating"
+                                   class="edit-toggle">
+
+                            <label for="edit-rating"
+                                   class="display-area d-block">
+
+                            <span style="color: var(--geo-orange);
+                                         font-size: 1.4rem;
+                                         font-weight: 700;">
+                                ⭐ {{ book.rating or 'No rating' }}
+                            </span>
+
                             </label>
+
                             {% if is_owner %}
+
                             <div class="input-field mt-2">
-                                <input type="number" name="rating" step="0.5" min="0" max="10"
-                                       class="form-control border-primary" value="{{ book.rating or '' }}">
+                                <input type="number"
+                                       name="rating"
+                                       step="0.5"
+                                       min="0"
+                                       max="10"
+                                       class="form-control"
+                                       style="border: 1px solid var(--geo-pastel);">
                             </div>
+
                             {% endif %}
                         </div>
+
                     </div>
 
                     <div class="mb-4">
-                        <label class="text-muted small fw-bold text-uppercase">Notes</label>
+
+                        <label class="small fw-bold text-uppercase"
+                               style="color: var(--geo-dark-blue);">
+                            Notes
+                        </label>
+
                         <div class="edit-wrapper">
-                            <input type="checkbox" id="edit-note" class="edit-toggle">
-                            <label for="edit-note" class="display-area d-block">
+
+                            <input type="checkbox"
+                                   id="edit-note"
+                                   class="edit-toggle">
+
+                            <label for="edit-note"
+                                   class="display-area d-block">
+
                                 <div class="notes-box p-3 rounded">
                                     {% if book.note and book.note.strip() %}
                                     {{ book.note }}
@@ -147,54 +212,138 @@
                                     <span class="text-muted">No notes yet.</span>
                                     {% endif %}
                                 </div>
+
                             </label>
+
                             {% if is_owner %}
+
                             <div class="input-field mt-2">
-                                <textarea name="note" class="form-control border-primary"
-                                          rows="8">{{ book.note or '' }}</textarea>
+                            <textarea name="note"
+                                      class="form-control"
+                                      rows="8"
+                                      style="border: 1px solid var(--geo-pastel);">
+                                {{ book.note or '' }}
+                            </textarea>
                             </div>
+
                             {% endif %}
+
                         </div>
+
                     </div>
 
                     {% if is_owner %}
-                    <div class="mt-4">
-                        <button type="submit" class="btn btn-primary btn-lg w-100 fw-bold" style="border-radius: 12px;">
-                            Save Changes
-                        </button>
-                    </div>
+
+                    <button type="submit"
+                            class="btn btn-geo-primary w-100 fw-bold"
+                            style="border-radius: 12px;">
+                        Save Changes
+                    </button>
+
                     {% endif %}
+
                 </div>
+
                 {% if is_owner %}
             </form>
             {% endif %}
+
         </div>
+
     </div>
+
     {% endif %}
 </div>
-{% if summary %}
-<div class="modal fade" id="summaryModal" tabindex="-1" aria-labelledby="summaryModalLabel" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered modal-lg">
-        <div class="modal-content border-0 shadow" style="border-radius: 20px; overflow: hidden;">
-            <div class="modal-header bg-primary text-white border-0 py-3">
-                <h5 class="modal-title fw-bold" id="summaryModalLabel">AI Book Summary</h5>
-                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
-            </div>
-            <div class="modal-body p-4" style="max-height: 70vh; overflow-y: auto;">
-                <h4 class="fw-bold mb-1">{{ book.reading_book.title }}</h4>
-                <p class="text-muted small mb-4">by {{ book.reading_book.author_of_book.author_name }}</p>
 
-                <div class="p-3 rounded" style="background-color: #f8f9fa; line-height: 1.7; white-space: pre-wrap; font-size: 1rem;">{{ summary }}</div>
+{% if summary %}
+
+<div class="modal fade" id="summaryModal" tabindex="-1">
+
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+
+        <div class="modal-content"
+             style="border-radius: 20px;
+                    border: 2px solid var(--geo-pastel);">
+
+            <div class="modal-header"
+                 style="background: var(--geo-dark-blue);
+                        color: white;">
+
+                <h5 class="fw-bold">AI Book Summary</h5>
+
+                <button class="btn-close btn-close-white"
+                        data-bs-dismiss="modal"></button>
+
             </div>
+
+            <div class="modal-body p-4"
+                 style="max-height: 70vh; overflow-y: auto;">
+
+                <h4 class="fw-bold"
+                    style="color: var(--geo-dark-blue);">
+                    {{ book.reading_book.title }}
+                </h4>
+
+                <p class="small"
+                   style="color: var(--geo-dark-blue); opacity: 0.6;">
+                    {{ book.reading_book.author_of_book.author_name }}
+                </p>
+
+                <div class="p-3"
+                     style="background: #f8f9fa;
+                            border-radius: 12px;
+                            white-space: pre-wrap;">
+                    {{ summary }}
+                </div>
+
+            </div>
+
         </div>
+
     </div>
+
 </div>
 
 <script>
-    document.addEventListener("DOMContentLoaded", function() {
-        var myModal = new bootstrap.Modal(document.getElementById('summaryModal'));
-        myModal.show();
+    document.addEventListener("DOMContentLoaded", function () {
+        new bootstrap.Modal(document.getElementById('summaryModal')).show();
     });
 </script>
+
 {% endif %}
+<style>
+    .edit-toggle { display: none; }
+    .input-field { display: none; }
+
+    .edit-toggle:checked + .display-area { display: none; }
+    .edit-toggle:checked + .display-area + .input-field { display: block; }
+
+    .display-area {
+        cursor: pointer;
+        padding: 10px;
+        border-radius: 12px;
+        transition: background 0.2s ease;
+    }
+
+    {% if not is_owner %}
+    .display-area {
+        pointer-events: none;
+        cursor: default !important;
+    }
+    .display-area:hover {
+        background: transparent !important;
+    }
+    {% endif %}
+
+    .display-area:hover {
+        background: rgba(86, 178, 219, 0.08);
+    }
+
+    .notes-box {
+        background: #f8f9fa;
+        border: 1px solid var(--geo-pastel);
+        min-height: 80px;
+        white-space: pre-wrap;
+    }
+</style>
 {% endblock %}

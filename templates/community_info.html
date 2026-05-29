@@ -1,86 +1,142 @@
 {% extends "base.html" %}
-
 {% block content %}
-<style>
-    .edit-toggle { display: none; }
-    .input-field { display: none; }
-    .edit-toggle:checked + .display-area { display: none; }
-    .edit-toggle:checked + .display-area + .input-field { display: block; }
-
-    .display-area {
-        cursor: pointer;
-        padding: 15px;
-        border-radius: 15px;
-        transition: background 0.2s;
-    }
-
-    {% if is_member %}
-    .display-area:hover { background-color: #f0f4f8; border: 1px dashed #0d6efd; }
-    {% else %}
-    .display-area { cursor: default; pointer-events: none; }
-    {% endif %}
-
-    .edit-wrapper { position: relative; }
-</style>
 
 <div class="container py-5">
+
     <div class="row justify-content-center">
         <div class="col-lg-8">
-            <a href="{{ url_for('all_communities') }}" class="btn btn-link text-decoration-none text-muted mb-4 p-0">
+
+            <a href="{{ url_for('all_communities') }}"
+               class="btn btn-link text-decoration-none p-0 mb-4"
+               style="color: var(--geo-dark-blue);">
                 &larr; Back to all clubs
             </a>
-            <div class="card border-0 shadow-sm p-4 p-lg-5" style="border-radius: 25px;">
+
+            <div class="card border-0 shadow-sm p-4 p-lg-5"
+                 style="border-radius: 25px;
+                        background: #ffffff;
+                        border: 2px solid var(--geo-pastel);">
+
                 {% if is_member %}
-                <form action="{{ url_for('update_community', community_id=community.community_id) }}" method="POST">
+
+                <form action="{{ url_for('update_community', community_id=community.community_id) }}"
+                      method="POST">
+
                     <div class="text-center mb-4">
-                        <div class="bg-primary-subtle text-primary rounded-circle d-inline-flex align-items-center justify-content-center mb-3"
-                             style="width: 80px; height: 80px; font-size: 2rem;">
-                            👥
+
+                        <img src="https://api.dicebear.com/9.x/shapes/svg?size=80"
+                             width="80"
+                             height="80"
+                             style="border-radius: 50%;
+                                    border: 2px solid var(--geo-pastel);">
+
+                        <div class="edit-wrapper mt-3">
+
+                            <input type="checkbox" id="edit-name" class="edit-toggle">
+
+                            <label for="edit-name" class="display-area d-inline-block">
+
+                                <h1 class="fw-bold mb-0"
+                                    style="color: var(--geo-dark-blue);">
+                                    {{ community.community_name }}
+                                </h1>
+
+                                <small style="color: var(--geo-orange);">
+                                    click to rename
+                                </small>
+
+                            </label>
+
+                            <div class="input-field mt-2 mx-auto" style="max-width: 400px;">
+                                <input type="text"
+                                       name="name"
+                                       class="form-control text-center fw-bold"
+                                       value="{{ community.community_name }}"
+                                       style="border: 1px solid var(--geo-pastel);
+                                              border-radius: 10px;">
+                            </div>
+
                         </div>
 
-                        <div class="edit-wrapper">
-                            <input type="checkbox" id="edit-name" class="edit-toggle">
-                            <label for="edit-name" class="display-area d-inline-block">
-                                <h1 class="fw-bold mb-0">{{ community.community_name }}</h1>
-                                <small class="text-primary d-block">click to rename</small>
-                            </label>
-                            <div class="input-field mt-2 mx-auto" style="max-width: 400px;">
-                                <input type="text" name="name" class="form-control text-center fw-bold"
-                                       value="{{ community.community_name }}">
-                            </div>
-                        </div>
-                        <p class="text-muted">{{ members|length }} members</p>
+                        <p class="mt-2"
+                           style="color: var(--geo-dark-blue); opacity: 0.6;">
+                            {{ members|length }} members
+                        </p>
+
                     </div>
 
-                    <hr class="my-4" style="opacity: 0.1;">
+                    <hr style="opacity: 0.1;">
 
                     <div class="community-content">
-                        <h4 class="fw-bold mb-3 text-center">Community Space</h4>
+
+                        <h4 class="fw-bold text-center mb-3"
+                            style="color: var(--geo-dark-blue);">
+                            Community Space
+                        </h4>
+
                         <div class="edit-wrapper mb-4">
-                            <label class="small fw-bold text-muted text-uppercase mb-2 d-block text-center">Description</label>
-                            <input type="checkbox" id="edit-desc" class="edit-toggle">
-                            <label for="edit-desc" class="display-area d-block bg-light rounded-4">
-                                <p class="text-muted mb-0 text-center">{{ community.about_community or 'No description
-                                    yet. Members, click to add one!' }}</p>
+
+                            <label class="small fw-bold text-uppercase d-block text-center mb-2"
+                                   style="color: var(--geo-dark-blue);">
+                                Description
                             </label>
+
+                            <input type="checkbox" id="edit-desc" class="edit-toggle">
+
+                            <label for="edit-desc"
+                                   class="display-area d-block text-center"
+                                   style="background: #f8f9fa; border-radius: 15px;">
+
+                                <p class="mb-0"
+                                   style="color: var(--geo-dark-blue); opacity: 0.7;">
+                                    {{ community.about_community or 'No description yet. Click to add one!' }}
+                                </p>
+
+                            </label>
+
                             <div class="input-field mt-2">
-                                <textarea name="description" class="form-control" rows="5">{{ community.about_community }}</textarea>
+                                <textarea name="description"
+                                          class="form-control"
+                                          rows="5"
+                                          style="border: 1px solid var(--geo-pastel);
+                                                 border-radius: 12px;"></textarea>
                             </div>
+
                         </div>
+
                         <div class="text-center mb-4">
-                            <button type="submit" class="btn btn-primary px-5 fw-bold shadow-sm"
-                                    style="border-radius: 12px;">
+                            <button type="submit"
+                                    class="btn btn-sm btn-geo-primary"
+                                    style="border-radius: 12px;
+                                           color: white;">
                                 Save Changes
                             </button>
                         </div>
+
                 </form>
-                <div class="list-group border-0 bg-light rounded-4 p-3 mb-4">
+
+                <div class="p-3 mb-4"
+                     style="background: #f8f9fa;
+                            border-radius: 15px;
+                            border: 1px solid var(--geo-pastel);">
+
                     <div class="d-flex justify-content-between align-items-center">
-                        <span class="fw-bold">Member Tools:</span>
+
+                        <span class="fw-bold"
+                              style="color: var(--geo-dark-blue);">
+                            Member Tools
+                        </span>
+
                         <a href="{{ url_for('community_members', community_id=community.community_id) }}"
-                           class="btn btn-sm btn-outline-primary fw-bold">
-                            👥 View Members
+                           class="btn btn-sm btn-geo-primary d-inline-flex align-items-center gap-2">
+
+                            <i data-lucide="users"
+                               style="width: 16px; height: 16px;"></i>
+
+                            <span class="fw-bold">View Members</span>
+
                         </a>
+
                     </div>
                 </div>
 
@@ -88,37 +144,98 @@
 
                     <form action="{{ url_for('leave_community', community_id=community.community_id) }}"
                           method="POST">
-                        <button class="btn btn-link text-muted p-0 text-decoration-none small" type="submit"
+
+                        <button class="btn btn-link text-decoration-none p-0"
+                                style="color: var(--geo-dark-blue); opacity: 0.6;"
+                                type="submit"
                                 onclick="return confirm('Leave this club?')">
                             Leave Community
                         </button>
+
                     </form>
 
                     <form action="{{ url_for('delete_community', community_id=community.community_id) }}"
                           method="POST">
-                        <button class="btn btn-outline-danger btn-sm px-3" type="submit"
+
+                        <button class="btn btn-sm"
+                                style="border: 1px solid #dc3545;
+                                       color: #dc3545;
+                                       border-radius: 10px;"
+                                type="submit"
                                 onclick="return confirm('DESTROY CLUB?')">
                             Delete Club
                         </button>
+
                     </form>
+
                 </div>
+
                 {% else %}
+
                 <div class="text-center py-3">
+
                     {% if current_user.is_authenticated %}
+
                     <form action="{{ url_for('join_community', community_id=community.community_id) }}"
                           method="POST">
-                        <button type="submit" class="btn btn-primary btn-lg px-5 fw-bold shadow"
-                                style="border-radius: 15px;">
+
+                        <button type="submit"
+                                class="btn fw-bold shadow"
+                                style="border-radius: 15px;
+                                       background: var(--geo-dark-blue);
+                                       color: white;">
                             Join to Edit & Participate
                         </button>
+
                     </form>
+
                     {% else %}
-                    <a href="{{ url_for('login') }}" class="btn btn-outline-primary">Login to view all info</a>
+
+                    <a href="{{ url_for('login') }}"
+                       class="btn btn-geo-primary w-50 fw-bold"
+                            style="border-radius: 12px;">
+                        Login to view all info
+                    </a>
+
                     {% endif %}
+
                 </div>
+
                 {% endif %}
+
             </div>
+
         </div>
     </div>
 </div>
+<style>
+    .edit-toggle { display: none; }
+    .input-field { display: none; }
+
+    .edit-toggle:checked + .display-area { display: none; }
+    .edit-toggle:checked + .display-area + .input-field { display: block; }
+
+    .display-area {
+        cursor: pointer;
+        padding: 15px;
+        border-radius: 15px;
+        transition: background 0.2s ease;
+    }
+
+    {% if is_member %}
+    .display-area:hover {
+        background-color: rgba(86, 178, 219, 0.08);
+        border: 1px dashed var(--geo-light-blue);
+    }
+    {% else %}
+    .display-area {
+        cursor: default;
+        pointer-events: none;
+    }
+    {% endif %}
+
+    .edit-wrapper {
+        position: relative;
+    }
+</style>
 {% endblock %}

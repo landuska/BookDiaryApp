@@ -8,7 +8,8 @@
 
     <div class="mb-4">
         <a href="javascript:history.back()"
-           class="btn btn-link text-muted text-decoration-none p-0">
+           class="btn btn-link text-decoration-none p-0"
+           style="color: var(--geo-dark-blue);">
             &larr; Back
         </a>
     </div>
@@ -17,58 +18,81 @@
 
         <div class="col-lg-5">
 
-            <div class="card border-0 shadow-sm p-4 text-center"
-                 style="border-radius: 20px;">
-
+            <div class="card border-0 shadow-sm text-center p-4"
+                 style="border-radius: 20px;
+                        background: #ffffff;
+                        border: 2px solid var(--geo-pastel);">
 
                 {% if book.cover_url %}
+
                 <img src="{{ book.cover_url }}"
                      class="mb-3 mx-auto d-block"
-                     style="height: 180px; width: auto; object-fit: contain; border-radius: 10px;">
+                     style="height: 180px;
+                            width: auto;
+                            object-fit: contain;
+                            border-radius: 12px;
+                            border: 1px solid var(--geo-pastel);">
+
                 {% else %}
-                <div class="d-flex align-items-center justify-content-center h-100 text-muted small">No Cover</div>
+
+                <div class="text-muted small py-5">
+                    No Cover
+                </div>
+
                 {% endif %}
 
+                <h4 class="fw-bold mb-2"
+                    style="color: var(--geo-dark-blue);">
+                    {{ book.title }}
+                </h4>
 
-                <h4 class="fw-bold mb-2">{{ book.title }}</h4>
-
-
-                <p class="text-muted mb-1">
+                <p class="mb-1"
+                   style="color: var(--geo-dark-blue); opacity: 0.7;">
                     {{ book.author_of_book.author_name }}
                 </p>
 
-                <p class="text-secondary small mb-3">
+                <p class="small mb-3"
+                   style="color: var(--geo-orange);">
                     {{ book.genre or 'Unknown genre' }}
                 </p>
 
-
                 {% if current_user.is_authenticated %}
+
                 <div class="border-top pt-3 mt-3">
-                    <form action="{{ url_for('book_public', book_id=book.book_id) }}" method="POST">
+
+                    <form action="{{ url_for('book_public', book_id=book.book_id) }}"
+                          method="POST">
+
                         <button type="submit"
-                                class="btn btn-outline-primary w-100 mt-3"
-                                style="border-radius: 12px;">
-                            Generate AI Summary
+                                class="btn w-100 mb-2 fw-bold"
+                                style="border-radius: 12px;
+                                       background: #f8f9fa;
+                                       color: var(--geo-dark-blue);
+                                       border: 1px solid var(--geo-pastel);">
+                            ✨ Generate AI Summary
                         </button>
+
                     </form>
-                </div>
-                <div class="border-top pt-3 mt-3">
+
                     <form action="{{ url_for('add_book', username=current_user.name) }}"
                           method="POST">
 
                         <input type="hidden" name="title" value="{{ book.title }}">
 
-                        <button class="btn btn-primary w-100 fw-bold"
+                        <button class="btn btn-geo-primary w-100 fw-bold"
                                 style="border-radius: 12px;">
                             + Add to My Library
                         </button>
 
                     </form>
+
                 </div>
+
                 {% else %}
 
                 <a href="{{ url_for('login') }}"
-                   class="btn btn-outline-primary w-100 fw-bold">
+                   class="btn btn-geo-primary w-100 fw-bold"
+                   style="border-radius: 12px;">
                     Login to add
                 </a>
 
@@ -80,30 +104,70 @@
 
     </div>
 </div>
-{% if summary %}
-<div class="modal fade" id="summaryModal" tabindex="-1" aria-labelledby="summaryModalLabel" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered modal-lg">
-        <div class="modal-content border-0 shadow" style="border-radius: 20px; overflow: hidden;">
-            <div class="modal-header bg-primary text-white border-0 py-3">
-                <h5 class="modal-title fw-bold" id="summaryModalLabel">AI Book Summary</h5>
-                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"
-                        aria-label="Close"></button>
-            </div>
-            <div class="modal-body p-4" style="max-height: 70vh; overflow-y: auto;">
-                <h4 class="fw-bold mb-1">{{ book.title }}</h4>
-                <p class="text-muted small mb-4">by {{ book.author_of_book.author_name }}</p>
 
-                <div class="p-3 rounded"
-                     style="background-color: #f8f9fa; line-height: 1.7; white-space: pre-wrap; font-size: 1rem;">{{ summary }}</div>
+{% if summary %}
+
+<div class="modal fade" id="summaryModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+
+        <div class="modal-content"
+             style="border-radius: 20px;
+                    border: 2px solid var(--geo-pastel);">
+
+            <div class="modal-header"
+                 style="background: var(--geo-dark-blue);
+                        color: white;
+                        border: none;">
+
+                <h5 class="modal-title fw-bold">
+                    AI Book Summary
+                </h5>
+
+                <button type="button"
+                        class="btn-close btn-close-white"
+                        data-bs-dismiss="modal">
+                </button>
+
             </div>
+
+            <div class="modal-body p-4"
+                 style="max-height: 70vh; overflow-y: auto;">
+
+                <h4 class="fw-bold"
+                    style="color: var(--geo-dark-blue);">
+                    {{ book.title }}
+                </h4>
+
+                <p class="small"
+                   style="color: var(--geo-dark-blue); opacity: 0.6;">
+                    by {{ book.author_of_book.author_name }}
+                </p>
+
+                <div class="p-3"
+                     style="background: #f8f9fa;
+                            border-radius: 12px;
+                            white-space: pre-wrap;
+                            line-height: 1.7;
+                            color: var(--geo-dark-blue);">
+
+                    {{ summary }}
+
+                </div>
+
+            </div>
+
         </div>
+
     </div>
 </div>
+
 <script>
-    document.addEventListener("DOMContentLoaded", function() {
-        var myModal = new bootstrap.Modal(document.getElementById('summaryModal'));
-        myModal.show();
+    document.addEventListener("DOMContentLoaded", function () {
+        var modal = new bootstrap.Modal(document.getElementById('summaryModal'));
+        modal.show();
     });
 </script>
+
 {% endif %}
+
 {% endblock %}

@@ -10,7 +10,7 @@
 body {
     background-color: var(--geo-bg-clean);
     color: var(--geo-dark-blue);
-    font-family: 'Segoe UI', Roboto, sans-serif;
+    font-family: 'Segue UI', Roboto, sans-serif;
 }
 
 
@@ -48,7 +48,6 @@ body {
     color: var(--geo-dark-blue) !important;
 }
 
-
 .dropdown-geo-menu {
     background-color: #ffffff;
     border: 2px solid var(--geo-dark-blue);
@@ -63,50 +62,57 @@ body {
     color: #ffffff;
 }
 
-
 .alert-geo {
-    background-color: var(--geo-dark-blue);
-    color: #ffffff;
+    background-color: #ffffff;
+    color: var(--geo-dark-blue);
     border: none;
     border-left: 6px solid var(--geo-orange);
     border-radius: 6px;
-}
-.alert-geo .btn-close {
-    filter: invert(1);
+    font-weight: 600;
 }
 
+.alert-geo .btn-close {
+    filter: none;
+    opacity: 0.7;
+}
+
+.alert-geo .btn-close:hover {
+    opacity: 1;
+}
 
 .geo-page-title {
     color: var(--geo-dark-blue);
-    border-bottom: 3px solid var(--geo-orange);
     padding-bottom: 10px;
     font-weight: 700;
     margin-top: 2rem;
     margin-bottom: 1.5rem;
+    border-bottom: none;
 }
-
 
 .geo-card {
-    background-color: #ffffff;
-    border: 2px solid var(--geo-dark-blue);
-    border-radius: 8px;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.05);
-    transition: transform 0.2s;
-}
-.geo-card:hover {
-    transform: translateY(-3px);
-    border-color: var(--geo-light-blue);
+    border: none !important;
+    border-radius: 16px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.06);
+    transition: all 0.25s ease;
+    background: #fff;
 }
 
+.geo-card:hover {
+    transform: translateY(-6px);
+    box-shadow: 0 10px 25px rgba(0,0,0,0.10);
+}
 
 .btn-geo-primary {
-    background-color: var(--geo-orange) !important;
-    color: white !important;
-    font-weight: bold !important;
-    border: none !important;
+    background: var(--geo-dark-blue);
+    color: white;
+    border: none;
+    border-radius: 10px;
+    transition: all 0.25s ease;
 }
+
 .btn-geo-primary:hover {
-    background-color: var(--geo-dark-blue) !important;
+    background: var(--geo-light-blue);
+    color: white;
 }
 
 .btn-geo-secondary {
@@ -117,4 +123,22 @@ body {
 }
 .btn-geo-secondary:hover {
     background-color: var(--geo-light-blue) !important;
+}
+
+.geo-icon {
+    width: 44px;
+    height: 44px;
+    margin-bottom: 0.5rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--geo-dark-blue);
+}
+
+.geo-icon svg {
+    width: 28px;
+    height: 28px;
+    color: var(--geo-dark-blue);
+    stroke: var(--geo-dark-blue);
+    stroke-width: 1.6;
 }

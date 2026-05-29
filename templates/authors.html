@@ -12,26 +12,24 @@
         </div>
     </div>
     <div class="d-flex justify-content-between align-items-center mb-4">
-        <h2 class="fw-bold">Authors</h2>
+        <h2 class="geo-page-title">Authors</h2>
     </div>
-
     <div class="row">
         {% if authors %}
         {% for author in authors %}
-        <div class="col-md-4 mb-4">
-            <div class="card border-0 shadow-sm h-100 text-center p-3" style="border-radius: 15px;">
-                <div class="card-body">
-
-                    <h5 class="fw-bold mb-1">{{ author.author_name }}</h5>
-                    <p class="text-muted small">
-                        {{ author.birth_date.strftime('%Y') if author.birth_date else '' }}
-                        -
-                        {{ author.death_date.strftime('%Y') if author.death_date else '' }}
-                    </p>
-                    <hr class="my-3" style="opacity: 0.1;">
-                    <a href="{{ url_for('books_by_author', author_id=author.author_id) }}"
-                       class="btn btn-sm btn-outline-primary px-3" style="border-radius: 8px;">View Books</a>
+        <div class="col-md-4 col-lg-3 mb-3">
+            <div class="card border-0 shadow-sm h-100 author-card"
+                 style="border-radius: 16px; padding: 16px;">
+                <div class="card-body text-center p-3">
+                    <h6 class="mb-0 fw-bold" style="color: var(--geo-dark-blue);">
+                        {{ author.author_name }}
+                    </h6>
                 </div>
+                <a href="{{ url_for('books_by_author', author_id=author.author_id) }}"
+                   class="btn btn-geo-primary btn-sm w-100 fw-bold"
+                   style="border-radius: 10px; font-size: 0.75rem;">
+                    View Books
+                </a>
             </div>
         </div>
         {% endfor %}

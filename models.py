@@ -2,14 +2,15 @@ from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy import Date, Integer, String, Float, ForeignKey
 from sqlalchemy.orm import Mapped, mapped_column, relationship, validates
 from datetime import date
-from typing import List
+from typing import List, Optional
 from flask_login import UserMixin
 from werkzeug.security import generate_password_hash, check_password_hash
 
 db = SQLAlchemy()
 
-
 class User(db.Model,UserMixin):
+    """Represents a system user for authentication and library management."""
+
     __tablename__ = 'users'
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
@@ -20,17 +21,52 @@ class User(db.Model,UserMixin):
         passive_deletes=True)
     list_of_communities_of_user: Mapped[List["UserCommunities"]] = relationship(back_populates="user_member")
 
-    def set_password(self, password):
+    def set_password(self, password: str)-> None:
+        """Hashes the password and stores it in the database.
+
+        Args:
+            password: The plain-text password to hash.
+        """
         self.password_hash = generate_password_hash(password)
 
-    def check_password(self, password):
+    def check_password(self, password: str)-> bool:
+        """Verifies the plain-text password against the stored hash.
+
+        Args:
+            password: The plain-text password to check.
+
+        Returns:
+            bool: True if the password matches, False otherwise.
+        """
+
         return check_password_hash(self.password_hash, password)
 
-    def __repr__(self):
+    @validates('name')
+    def validate_username(self, key: str, value: str) -> str:
+        """Validates that the username typed by the user is valid.
+        Args:
+            key: The name of the field.
+            value: The name string.
+
+        Returns:
+            str: Validated name.
+
+        Raises:
+            ValueError: If the name is not validate.
+        """
+        if not value or not value.strip():
+            raise ValueError("Username cannot be empty.")
+        if len(value.strip()) < 3:
+            raise ValueError("Username must be at least 3 characters long.")
+        return value.strip()
+
+    def __repr__(self)-> str:
         return f"User (id={self.id}, name={self.name})"
 
 
 class Book(db.Model):
+    """Represents a book available in the global catalog."""
+
     __tablename__ = 'books'
 
     book_id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
@@ -44,11 +80,13 @@ class Book(db.Model):
     list_of_readers: Mapped[List["UserBooks"]] = relationship(back_populates="reading_book")
     author_of_book: Mapped["Author"] = relationship(back_populates="books")
 
-    def __repr__(self):
+    def __repr__(self)-> str:
         return f"Book (id={self.book_id}, title={self.title})"
 
 
 class UserBooks(db.Model):
+    """Association model representing a user's personal book collection with reading progress."""
+
     __tablename__ = 'user_books'
 
     user_id: Mapped[int] = mapped_column(Integer, ForeignKey('users.id', ondelete='CASCADE'), primary_key=True)
@@ -60,11 +98,62 @@ class UserBooks(db.Model):
     user_reader: Mapped["User"] = relationship(back_populates="list_of_reading_books")
     reading_book: Mapped["Book"] = relationship(back_populates="list_of_readers")
 
-    def __repr__(self):
+    @validates('status')
+    def validate_status(self, key: str, value: Optional[str]) -> Optional[str]:
+        """Validates that the status belongs to predefined reading states.
+
+        Args:
+            key: The name of the field.
+            value: The status string.
+
+        Returns:
+            Optional[str]: Validated status.
+
+        Raises:
+            ValueError: If the status is not allowed.
+        """
+        allowed_statuses = {'Want to read', 'Currently reading', 'Completed'}
+        if value is not None and value not in allowed_statuses:
+            raise ValueError(f"Invalid status. Allowed statuses are: {allowed_statuses}")
+        return value
+
+    @validates('rating')
+    def validate_rating(self, key: str, value: Optional[float]) -> Optional[float]:
+        """Validates that the book rating is strictly between 0.0 and 10.0.
+
+        Args:
+            key: The name of the field being validated.
+            value: The rating score provided.
+
+        Returns:
+            Optional[float]: The validated rating value.
+
+        Raises:
+            ValueError: If the rating score is out of the 0-10 range.
+        """
+        if value is not None and (value < 0.0 or value > 10.0):
+            raise ValueError("Rating must be between 0 and 10.")
+        return value
+
+    @validates('note')
+    def validate_note(self, key: str, value: Optional[str]) -> Optional[str]:
+        """Trims whitespace from the book note typed by the user.
+        Args:
+            key: The name of the field being validated.
+            value: The text of notes.
+
+        Returns:
+            Returns: Optional[str]: The note's text without whitespace, or None.
+        """
+        return value.strip() if value else value
+
+    def __repr__(self)-> str:
         return f"UserBooks (user_id={self.user_id}, book_id={self.book_id})"
 
 
 class Author(db.Model):
+    """Represents a book author with biographical details."""
+
     __tablename__ = 'authors'
 
     author_id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
@@ -74,11 +163,13 @@ class Author(db.Model):
 
     books: Mapped[List["Book"]] = relationship(back_populates="author_of_book")
 
-    def __repr__(self):
+    def __repr__(self)-> str:
         return f"Author (id={self.author_id}, name={self.author_name})"
 
 
 class Community(db.Model):
+    """Represents a user community or a book club within the application."""
+
     __tablename__ = 'communities'
 
     community_id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
@@ -88,11 +179,41 @@ class Community(db.Model):
     list_of_members: Mapped[List["UserCommunities"]] = relationship(back_populates="user_community", cascade="all, delete",
         passive_deletes=True)
 
-    def __repr__(self):
+    @validates('community_name')
+    def validate_community_name(self, key: str, value: str) -> str:
+        """Validates the community name typed by the user.
+        Args:
+            key: The name of the field being validated.
+            value: The community name string.
+
+        Returns:
+            str: The community's name without whitespace.
+        """
+        if not value or not value.strip():
+            raise ValueError("Community name cannot be empty.")
+        if len(value.strip()) < 3:
+            raise ValueError("Community name must be at least 3 characters long.")
+        return value.strip()
+
+    @validates('about_community')
+    def validate_about_community(self, key: str, value: Optional[str]) -> Optional[str]:
+        """Trims whitespace from the community description typed by the user.
+        Args:
+            key: The name of the field being validated.
+            value: The text of community description.
+
+        Returns:
+            Returns: Optional[str]: The note's text without whitespace, or None.
+        """
+        return value.strip() if value else value
+
+    def __repr__(self)-> str:
         return f"Community (id={self.community_id}, name={self.community_name})"
 
 
 class UserCommunities(db.Model):
+    """Association model linking users to the communities they have joined."""
+
     __tablename__ = 'user_communities'
 
     user_id: Mapped[int] = mapped_column(Integer, ForeignKey('users.id', ondelete='CASCADE'), primary_key=True)
@@ -101,5 +222,5 @@ class UserCommunities(db.Model):
     user_member: Mapped["User"] = relationship(back_populates="list_of_communities_of_user")
     user_community: Mapped["Community"] = relationship(back_populates="list_of_members")
 
-    def __repr__(self):
+    def __repr__(self)-> str:
         return f"UserCommunities (user_id={self.user_id}, community_id={self.community_id})"

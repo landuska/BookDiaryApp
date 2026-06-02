@@ -1,3 +1,18 @@
+"""
+Main Flask application for the AI-powered Book Library platform.
+
+This module provides:
+- User registration and authentication
+- Personal book management
+- Author browsing
+- Community management
+- AI-generated book summaries
+- Conversational AI assistant powered by LangGraph
+
+The application uses Flask, SQLAlchemy, Flask-Login,
+OpenAI services, PostgreSQL and Langgraph.
+"""
+
 from flask import Flask, render_template, request, redirect,  url_for, flash, jsonify
 from flask_login import LoginManager, login_user, logout_user, login_required, current_user
 from sqlalchemy.exc import SQLAlchemyError
@@ -41,6 +56,12 @@ with app.app_context():
 
 @app.route('/', methods=['GET'])
 def index():
+    """
+    Render the application's landing page.
+
+    Returns:
+        str: Rendered index page.
+    """
     return render_template('index.html')
 
 
@@ -49,6 +70,15 @@ def index():
 
 @app.route('/books', methods=['GET'])
 def all_books():
+    """
+    Display all books with optional genre filtering.
+
+    Query Args:
+        genre (str, optional): Genre to filter books by. Defaults to "All".
+
+    Returns:
+        str: Rendered books page containing filtered books and genres.
+    """
     books = data_manager.get_entities(Book)
     genre = request.args.get('genre', 'All')
     filtered_books = data_manager.get_general_filtered_books(genre=genre)
@@ -62,6 +92,17 @@ def all_books():
 
 @app.route('/books/<int:book_id>', methods=['GET', 'POST'])
 def book_public(book_id):
+    """
+    Display detailed information about a book.
+
+    Generates an AI summary when a POST request is submitted.
+
+    Args:
+        book_id (int): ID of the selected book.
+
+    Returns:
+        str: Rendered book detail page.
+    """
     book = data_manager.get_entity_by_id(Book, book_id)
     summary = None
 
@@ -81,12 +122,27 @@ def book_public(book_id):
 
 @app.route('/authors', methods=['GET'])
 def all_authors():
+    """
+    Display all authors stored in the database.
+
+    Returns:
+        str: Rendered authors page.
+    """
     authors = data_manager.get_entities(Author)
     return render_template('authors.html', authors=authors)
 
 
 @app.route('/authors/<int:author_id>', methods=['GET'])
 def books_by_author(author_id):
+    """
+    Display all books written by a specific author.
+
+    Args:
+        author_id (int): Author identifier.
+
+    Returns:
+        str: Rendered page containing the author's books.
+    """
     author = data_manager.get_entity_by_id(Author, author_id)
     if not author:
         flash("Author not found")
@@ -101,12 +157,27 @@ def books_by_author(author_id):
 
 @app.route('/communities', methods=['GET'])
 def all_communities():
+    """
+    Display all reading communities.
+
+    Returns:
+        str: Rendered communities page.
+    """
     communities = data_manager.get_entities(Community)
     return render_template('communities.html', communities=communities)
 
 
 @app.route('/communities/<int:community_id>', methods=['GET'])
 def community_info(community_id):
+    """
+    Display information about a community and its members.
+
+    Args:
+        community_id (int): Community identifier.
+
+    Returns:
+        str: Rendered community information page.
+    """
     community = data_manager.get_entity_by_multiple_fields(Community, community_id=community_id)
     members = community.list_of_members
 
@@ -127,11 +198,32 @@ def community_info(community_id):
 
 @login_manager.user_loader
 def load_user(user_id):
+    """
+    Load a user for Flask-Login.
+
+    Args:
+        user_id (int): User identifier.
+
+    Returns:
+        User | None: Loaded user object or None if not found.
+    """
     return db.session.get(User, int(user_id))
 
 
 @app.route('/register', methods=['GET', 'POST'])
 def register():
+    """
+    Register a new user account.
+
+    GET:
+        Display registration form.
+
+    POST:
+        Validate input and create a new user.
+
+    Returns:
+        str | Response: Rendered template or redirect response.
+    """
     if request.method == 'GET':
         return render_template('register.html')
 
@@ -160,6 +252,13 @@ def register():
 
 @app.route('/', methods=['POST'])
 def login():
+    """
+    Authenticate and log in a user.
+
+    Returns:
+        Response: Redirect to user page on success or back to
+        the landing page on failure.
+    """
     username = request.form.get('username').strip().lower()
     password = request.form.get('password').strip()
 
@@ -184,18 +283,45 @@ def login():
 @app.route('/<username>', methods=['GET'])
 @login_required
 def user_page(username):
+    """
+    Display a user's dashboard page.
+
+    Args:
+        username (str): Username from the URL.
+
+    Returns:
+        str: Rendered user dashboard.
+    """
     return render_template('user_page.html', username=username)
 
 
 @app.route('/<username>/logout')
 @login_required
 def logout(username):
+    """
+    Log out the currently authenticated user.
+
+    Args:
+        username (str): Username from the URL.
+
+    Returns:
+        Response: Redirect to the landing page.
+    """
     logout_user()
     return redirect(url_for('index'))
 
 @app.route('/<username>/delete', methods=['POST'])
 @login_required
 def delete_user(username):
+    """
+    Delete the currently authenticated user's account.
+
+    Args:
+        username (str): Username from the URL.
+
+    Returns:
+        Response: Redirect to the landing page after deletion.
+    """
     try:
         user = data_manager.get_entity_by_multiple_fields(
             User,
@@ -223,6 +349,12 @@ def delete_user(username):
 
 @login_manager.unauthorized_handler
 def unauthorized():
+    """
+    Handle unauthorized access attempts.
+
+    Returns:
+        tuple: JSON response with HTTP status code 401.
+    """
     return jsonify({
         "error": "not_authenticated",
         "message": "Please log in to use the assistant."
@@ -239,6 +371,20 @@ def unauthorized():
 @app.route('/<username>/user_books', methods=['GET'])
 @login_required
 def user_books(username):
+    """
+    Display a user's book collection with filters.
+
+    Query Args:
+        status (str): Reading status filter.
+        rating (float): Minimum rating filter.
+        genre (str): Genre filter.
+
+    Args:
+        username (str): Username from the URL.
+
+    Returns:
+        str: Rendered user books page.
+    """
     user = data_manager.get_entity_by_multiple_fields(User, name=username)
 
     status = request.args.get('status', 'All')
@@ -261,6 +407,21 @@ def user_books(username):
 @app.route('/<username>/add_book', methods=['GET', 'POST'])
 @login_required
 def add_book(username):
+    """
+    Search and add a new book to the user's collection.
+
+    GET:
+        Display the add-book form.
+
+    POST:
+        Search for books using the provided title.
+
+    Args:
+        username (str): Username from the URL.
+
+    Returns:
+        str | Response: Rendered template or redirect response.
+    """
     if request.method == 'GET':
         return render_template('add_book.html', username=current_user.name)
 
@@ -286,6 +447,15 @@ def add_book(username):
 @app.route('/<username>/confirm_add_book', methods=['POST'])
 @login_required
 def confirm_add_book(username):
+    """
+    Confirm adding a selected book to the database and user library.
+
+    Args:
+        username (str): Username from the URL.
+
+    Returns:
+        Response: Redirect after processing.
+    """
     try:
         api_book_isbn = request.form.get('isbn')
         api_book_title = request.form.get('title')
@@ -336,6 +506,18 @@ def confirm_add_book(username):
 @app.route('/<int:user_id>/user_books/<int:book_id>', methods=['GET', 'POST'])
 @login_required
 def user_book_info(user_id, book_id):
+    """
+    Display detailed information about a user's book entry.
+
+    Generates an AI summary on POST requests.
+
+    Args:
+        user_id (int): User identifier.
+        book_id (int): Book identifier.
+
+    Returns:
+        str: Rendered book details page.
+    """
     user_book = data_manager.get_entity_by_multiple_fields(UserBooks, user_id=user_id, book_id=book_id)
     if user_book is None:
         flash("Book not found in this library.")
@@ -357,6 +539,15 @@ def user_book_info(user_id, book_id):
 @app.route('/user_books/<int:book_id>/update', methods=['POST'])
 @login_required
 def update_book_info(book_id):
+    """
+    Update reading status, rating, or notes for a user's book.
+
+    Args:
+        book_id (int): Book identifier.
+
+    Returns:
+        Response: Redirect to the user's books page.
+    """
     status = request.form.get('status')
     rating = request.form.get('rating')
     note = request.form.get('note')
@@ -383,6 +574,15 @@ def update_book_info(book_id):
 @app.route('/user_books/<int:book_id>/delete', methods=['POST'])
 @login_required
 def delete_book(book_id: int):
+    """
+    Remove a book from the authenticated user's collection.
+
+    Args:
+        book_id (int): Book identifier.
+
+    Returns:
+        Response: Redirect to the user's books page.
+    """
     try:
         user_book = data_manager.get_entity_by_multiple_fields(
             UserBooks,
@@ -415,6 +615,15 @@ def delete_book(book_id: int):
 @app.route('/<username>/user_authors', methods=['GET'])
 @login_required
 def user_authors(username):
+    """
+    Display authors associated with the user's library.
+
+    Args:
+        username (str): Username from the URL.
+
+    Returns:
+        str: Rendered authors page.
+    """
     authors = data_manager.get_authors_by_user(user_id=current_user.id)
     return render_template('user_authors.html', authors=authors)
 
@@ -425,6 +634,15 @@ def user_authors(username):
 @app.route('/<username>/communities', methods=['GET'])
 @login_required
 def user_communities(username):
+    """
+    Display communities joined by the user.
+
+    Args:
+        username (str): Username from the URL.
+
+    Returns:
+        str: Rendered communities page.
+    """
     all_user_communities = data_manager.get_communities_by_user(user_id=current_user.id)
     return render_template('user_communities.html', communities=all_user_communities)
 
@@ -432,7 +650,18 @@ def user_communities(username):
 @app.route('/communities/create', methods=['GET', 'POST'])
 @login_required
 def create_community():
+    """
+    Create a new reading community.
 
+    GET:
+        Display the community creation form.
+
+    POST:
+        Create the community and add the creator as a member.
+
+    Returns:
+        str | Response: Rendered template or redirect response.
+    """
     if request.method == 'GET':
         return render_template('create_community.html')
 
@@ -470,6 +699,15 @@ def create_community():
 @app.route('/communities/<int:community_id>/update', methods=['POST'])
 @login_required
 def update_community(community_id):
+    """
+    Update community information.
+
+    Args:
+        community_id (int): Community identifier.
+
+    Returns:
+        Response: Redirect after update.
+    """
     new_name = request.form.get('name')
     new_description = request.form.get('description')
 
@@ -493,6 +731,15 @@ def update_community(community_id):
 @app.route('/communities/<int:community_id>/join', methods=['POST'])
 @login_required
 def join_community(community_id):
+    """
+    Add the current user to a community.
+
+    Args:
+        community_id (int): Community identifier.
+
+    Returns:
+        Response: Redirect after joining.
+    """
     try:
         data_manager.add_user_to_community(current_user.id, community_id)
         flash(f"User joined to community successfully")
@@ -512,6 +759,17 @@ def join_community(community_id):
 @app.route('/<int:community_id>/members', methods=['GET'])
 @login_required
 def community_members(community_id):
+    """
+    Display members of a community.
+
+    Access is restricted to community members.
+
+    Args:
+        community_id (int): Community identifier.
+
+    Returns:
+        str | Response: Rendered members page or redirect.
+    """
     community = data_manager.get_entity_by_id(Community, ent_id=community_id)
 
     is_member = any(member.user_id == current_user.id for member in community.list_of_members)
@@ -525,6 +783,15 @@ def community_members(community_id):
 @app.route('/communities/<int:community_id>/leave', methods=['POST'])
 @login_required
 def leave_community(community_id: int):
+    """
+    Remove the current user from a community.
+
+    Args:
+        community_id (int): Community identifier.
+
+    Returns:
+        Response: Redirect after leaving.
+    """
     try:
         user_community = data_manager.get_entity_by_multiple_fields(
             UserCommunities,
@@ -554,6 +821,15 @@ def leave_community(community_id: int):
 @app.route('/communities/<int:community_id>/delete', methods=['POST'])
 @login_required
 def delete_community(community_id: int):
+    """
+    Delete an existing community.
+
+    Args:
+        community_id (int): Community identifier.
+
+    Returns:
+        Response: Redirect after deletion.
+    """
     try:
         community_obj = data_manager.get_entity_by_id(Community, community_id)
 
@@ -582,6 +858,17 @@ def delete_community(community_id: int):
 @app.route("/chat", methods=["POST"])
 @login_required
 def chat():
+    """
+    Process a chat request using the LangGraph AI assistant.
+
+    Accepts a user message, sends it to the AI agent, and
+    returns the generated response as JSON.
+
+    Returns:
+        tuple | Response:
+            JSON response containing the assistant's answer
+            or an error message.
+    """
     if GLOBAL_AGENT_APP is None:
         return jsonify({"error": "AI Assistant is not initialized"}), 500
     user_message = request.json.get("message", "").strip()

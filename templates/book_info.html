@@ -167,7 +167,7 @@
                             <span style="color: var(--geo-orange);
                                          font-size: 1.4rem;
                                          font-weight: 700;">
-                                ⭐ {{ book.rating or 'No rating' }}
+                                ⭐ {{ book.rating }}
                             </span>
 
                             </label>
@@ -292,9 +292,7 @@
                 <div class="p-3"
                      style="background: #f8f9fa;
                             border-radius: 12px;
-                            white-space: pre-wrap;">
-                    {{ summary }}
-                </div>
+                            white-space: pre-wrap;">{{ summary }}</div>
 
             </div>
 

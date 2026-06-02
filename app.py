@@ -7,11 +7,18 @@ from data_manage import DataManager
 from helpers import *
 from openai_helpers import *
 from langgraph_orch import create_agent
+import os
+from dotenv import load_dotenv
+
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+path = os.path.join(BASE_DIR, "config", ".env")
+load_dotenv(path)
 
 app = Flask(__name__)
 
+app.secret_key = os.getenv("FLASK_SECRET_KEY", "temporary-fallback-key")
+
 app.config['SQLALCHEMY_DATABASE_URI'] = "postgresql://postgres:dlyaraboty_Python2026@localhost:5432/postgres"
-app.secret_key = 'flashkey'
 
 db.init_app(app)
 login_manager = LoginManager(app)

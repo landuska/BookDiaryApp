@@ -1,26 +1,31 @@
 from flask import Flask, render_template, request, redirect,  url_for, flash, jsonify
 from flask_login import LoginManager, login_user, logout_user, login_required, current_user
 from sqlalchemy.exc import SQLAlchemyError
+from langchain_core.messages import HumanMessage
 from models import *
 from data_manage import DataManager
 from helpers import *
 from openai_helpers import *
-
+from langgraph_orch import create_agent
 
 app = Flask(__name__)
 
 app.config['SQLALCHEMY_DATABASE_URI'] = "postgresql://postgres:dlyaraboty_Python2026@localhost:5432/postgres"
+app.secret_key = 'flashkey'
 
 db.init_app(app)
+login_manager = LoginManager(app)
+login_manager.login_view = 'login'
+
+try:
+    GLOBAL_AGENT_APP = create_agent()
+except Exception as e:
+    print(f"Error compiling Langgraph Agent: {e}")
+    GLOBAL_AGENT_APP = None
 
 with app.app_context():
     db.create_all()
-
-app.secret_key = 'flashkey'
-login_manager = LoginManager(app)
-login_manager.login_view = 'login'
-data_manager = DataManager()
-
+    data_manager = DataManager()
 
 # ***********************************************
 # ******** THE USER IS NOT LOGGED IN *********
@@ -207,6 +212,14 @@ def delete_user(username):
         flash(f"Some error occurred. Please try again: {str(e)}")
 
     return redirect(url_for('index'))
+
+
+@login_manager.unauthorized_handler
+def unauthorized():
+    return jsonify({
+        "error": "not_authenticated",
+        "message": "Please log in to use the assistant."
+    }), 401
 
 
 # *************************************************************
@@ -554,6 +567,31 @@ def delete_community(community_id: int):
         flash(f"Some error occurred. Please try again: {str(e)}")
 
     return redirect(url_for('user_communities', username=current_user.name))
+
+# *********************************************
+# **************** AI AGENT *******************
+# *********************************************
+
+@app.route("/chat", methods=["POST"])
+@login_required
+def chat():
+    if GLOBAL_AGENT_APP is None:
+        return jsonify({"error": "AI Assistant is not initialized"}), 500
+    user_message = request.json.get("message", "").strip()
+
+    if not user_message:
+        return jsonify({"error": "Invalid message"}), 400
+
+    initial_input = {"messages": [HumanMessage(content=user_message)]}
+    config = {"configurable": {"thread_id": str(current_user.id)}}
+    try:
+        result = GLOBAL_AGENT_APP.invoke(initial_input, config)
+        ai_response = result["messages"][-1].content
+        return jsonify({"response": ai_response})
+
+    except Exception as e:
+        return jsonify({"error": f"AI Error: {str(e)}"}), 500
+
 
 # *********************************************
 # ************ ERRORS *************************

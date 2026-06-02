@@ -4,15 +4,17 @@
     --geo-orange: #f48c42;
     --geo-bg-clean: #ffffff;
     --geo-pastel: #aed1d6;
+    --chat-user: var(--geo-dark-blue);
+    --chat-ai: #ffffff;
+    --chat-border: var(--geo-pastel);
+    --chat-shadow: 0 4px 12px rgba(12, 87, 132, 0.12);
 }
-
 
 body {
     background-color: var(--geo-bg-clean);
     color: var(--geo-dark-blue);
-    font-family: 'Segue UI', Roboto, sans-serif;
+    font-family: 'Segoe UI', Roboto, sans-serif;
 }
-
 
 .navbar-geo {
     background-color: var(--geo-dark-blue);
@@ -34,8 +36,6 @@ body {
     opacity: 1;
     color: var(--geo-orange) !important;
 }
-
-
 .navbar-geo .user-highlight {
     color: #ffffff !important;
     background-color: var(--geo-orange);
@@ -70,12 +70,10 @@ body {
     border-radius: 6px;
     font-weight: 600;
 }
-
 .alert-geo .btn-close {
     filter: none;
     opacity: 0.7;
 }
-
 .alert-geo .btn-close:hover {
     opacity: 1;
 }
@@ -86,7 +84,6 @@ body {
     font-weight: 700;
     margin-top: 2rem;
     margin-bottom: 1.5rem;
-    border-bottom: none;
 }
 
 .geo-card {
@@ -96,33 +93,21 @@ body {
     transition: all 0.25s ease;
     background: #fff;
 }
-
 .geo-card:hover {
     transform: translateY(-6px);
     box-shadow: 0 10px 25px rgba(0,0,0,0.10);
 }
 
-.btn-geo-primary {
-    background: var(--geo-dark-blue);
-    color: white;
-    border: none;
+.btn-geo-primary, .btn-geo-secondary {
+    background: var(--geo-dark-blue) !important;
+    color: white !important;
+    border: none !important;
     border-radius: 10px;
+    font-weight: 600;
     transition: all 0.25s ease;
 }
-
-.btn-geo-primary:hover {
-    background: var(--geo-light-blue);
-    color: white;
-}
-
-.btn-geo-secondary {
-    background-color: var(--geo-dark-blue) !important;
-    color: white !important;
-    font-weight: 600 !important;
-    border: none !important;
-}
-.btn-geo-secondary:hover {
-    background-color: var(--geo-light-blue) !important;
+.btn-geo-primary:hover, .btn-geo-secondary:hover {
+    background: var(--geo-light-blue) !important;
 }
 
 .geo-icon {
@@ -132,13 +117,152 @@ body {
     display: flex;
     align-items: center;
     justify-content: center;
-    color: var(--geo-dark-blue);
 }
-
 .geo-icon svg {
     width: 28px;
     height: 28px;
-    color: var(--geo-dark-blue);
     stroke: var(--geo-dark-blue);
     stroke-width: 1.6;
+    fill: none;
+}
+
+.chat-markdown-content h3 {
+    font-size: 1rem !important;
+    font-weight: 700;
+    margin-top: 10px;
+    margin-bottom: 5px;
+    color: #212529;
+}
+.chat-markdown-content h3:first-child {
+    margin-top: 0;
+}
+.chat-markdown-content ul, .chat-markdown-content ol {
+    padding-left: 20px;
+    margin-bottom: 8px;
+}
+.chat-markdown-content li {
+    margin-bottom: 4px;
+}
+.chat-markdown-content p {
+    margin-bottom: 8px;
+}
+.chat-markdown-content p:last-child {
+    margin-bottom: 0;
+}
+.chat-markdown-content hr {
+    margin: 10px 0;
+    border-color: #dee2e6;
+}
+
+#chat-widget .card {
+    border-radius: 16px;
+    backdrop-filter: blur(10px);
+    box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+}
+#chat-widget .card-header {
+    background: var(--geo-dark-blue) !important;
+    color: white;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+    border-bottom: 3px solid var(--geo-orange);
+}
+#chat-window {
+    background: linear-gradient(180deg, #f9fcff 0%, #ffffff 100%);
+    padding: 12px;
+    overflow-y: auto;
+}
+.chat-row {
+    display: flex;
+    margin-bottom: 10px;
+}
+.chat-user {
+    margin-left: auto;
+    background: var(--chat-user);
+    color: white;
+    padding: 10px 14px;
+    border-radius: 14px 14px 4px 14px;
+    max-width: 80%;
+    box-shadow: var(--chat-shadow);
+    font-weight: 500;
+}
+.chat-ai {
+    margin-right: auto;
+    background: var(--chat-ai);
+    color: var(--geo-dark-blue);
+    border: 1px solid var(--chat-border);
+    padding: 10px 14px;
+    border-radius: 14px 14px 14px 4px;
+    max-width: 80%;
+    box-shadow: var(--chat-shadow);
+}
+
+#chat-form input {
+    border-radius: 12px;
+    border: 2px solid var(--geo-pastel);
+    padding: 10px;
+    font-size: 0.9rem;
+}
+#chat-form input:focus {
+    border-color: var(--geo-light-blue);
+    box-shadow: 0 0 0 0.15rem rgba(89, 178, 219, 0.25);
+}
+#chat-form .btn {
+    border-radius: 12px;
+    background: var(--geo-dark-blue);
+    border: none;
+}
+#chat-form .btn:hover {
+    background: var(--geo-light-blue);
+}
+#chat-toggle .btn {
+    background: var(--geo-orange);
+    border: none;
+    box-shadow: 0 6px 18px rgba(244, 140, 66, 0.35);
+}
+#chat-toggle .btn:hover {
+    background: var(--geo-light-blue);
+}
+#chat-widget {
+    transition: all 0.25s ease;
+    transform-origin: bottom right;
+    display: flex;
+    flex-direction: column;
+}
+.chat-hidden {
+    opacity: 0;
+    transform: scale(0.95);
+    display: none !important;
+}
+
+.login-message {
+    color: var(--geo-orange);
+    font-weight: 500;
+}
+
+#chat-quick-buttons {
+    background-color: var(--geo-bg-clean) !important;
+    padding: 8px 12px !important;
+}
+
+.btn-geo-quick {
+    background: transparent !important;
+    color: var(--geo-dark-blue) !important;
+    border: 1.5px solid var(--geo-pastel) !important;
+    border-radius: 8px !important;
+    font-weight: 600;
+    font-size: 0.8rem;
+    padding: 6px 10px;
+    transition: all 0.2s ease;
+}
+
+.btn-geo-quick:hover {
+    background: var(--geo-orange) !important;
+    border-color: var(--geo-orange) !important;
+    color: white !important;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 8px rgba(244, 140, 66, 0.2);
+}
+
+.btn-geo-quick:active {
+    transform: translateY(0);
 }

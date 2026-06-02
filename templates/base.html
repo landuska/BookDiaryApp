@@ -7,14 +7,15 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="{{ url_for('static', filename='style.css') }}" rel="stylesheet">
     <script src="https://unpkg.com/lucide@latest"></script>
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
 </head>
 <body>
 <nav class="navbar navbar-expand-lg navbar-dark navbar-geo">
     <div class="container">
-        <i style="color: #ffffff;" data-lucide="square-library" class="me-2"></i>
+        <i data-lucide="square-library" class="me-2 text-white"></i>
         <a class="navbar-brand" href="{{ url_for('index') }}">BookClub</a>
-        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav"
-                style="border-color: #ffffff;">
+
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
             <span class="navbar-toggler-icon"></span>
         </button>
         <div class="collapse navbar-collapse" id="navbarNav">
@@ -29,19 +30,14 @@
                         {{ current_user.name }}
                     </a>
                     <ul class="dropdown-menu dropdown-menu-end dropdown-geo-menu" aria-labelledby="userDropdown">
-                        <li><a class="dropdown-item" href="{{ url_for('user_books', username=current_user.name) }}">My
-                            Books</a></li>
-                        <li><a class="dropdown-item" href="{{ url_for('user_authors', username=current_user.name) }}">My
-                            Authors</a></li>
-                        <li><a class="dropdown-item"
-                               href="{{ url_for('user_communities', username=current_user.name) }}">My Clubs</a></li>
-                        <li><a class="dropdown-item" href="{{ url_for('user_page', username=current_user.name) }}">My
-                            Account</a></li>
+                        <li><a class="dropdown-item" href="{{ url_for('user_books', username=current_user.name) }}">My Books</a></li>
+                        <li><a class="dropdown-item" href="{{ url_for('user_authors', username=current_user.name) }}">My Authors</a></li>
+                        <li><a class="dropdown-item" href="{{ url_for('user_communities', username=current_user.name) }}">My Clubs</a></li>
+                        <li><a class="dropdown-item" href="{{ url_for('user_page', username=current_user.name) }}">My Account</a></li>
                         <li>
                             <hr class="dropdown-divider" style="border-top: 1px solid var(--geo-dark-blue);">
                         </li>
-                        <li><a class="dropdown-item text-danger fw-bold"
-                               href="{{ url_for('logout', username=current_user.name) }}">Logout</a></li>
+                        <li><a class="dropdown-item text-danger fw-bold" href="{{ url_for('logout', username=current_user.name) }}">Logout</a></li>
                     </ul>
                 </li>
                 {% else %}
@@ -69,6 +65,182 @@
     {% endblock %}
 </main>
 
+<div id="chat-toggle" style="position:fixed; bottom:20px; right:20px; z-index:9999;">
+    <div class="btn btn-dark rounded-circle shadow">
+        <i data-lucide="message-circle-more"></i>
+    </div>
+</div>
+
+<div id="chat-widget" class="chat-hidden" style="position: fixed; bottom: 20px; right: 20px; width: 420px; height: 450px; z-index: 9999;">
+    <div class="card h-100 border-0 overflow-hidden">
+        <div class="card-header">
+            Your personal AI Assistant
+        </div>
+        <div class="card-body flex-grow-1 overflow-auto" id="chat-window">
+        </div>
+        <div class="px-3 py-2 bg-light border-top d-flex gap-2 flex-wrap" id="chat-quick-buttons">
+            <button type="button" class="btn btn-geo-quick quick-btn flex-grow-1" data-msg="Find me a book to read" style="font-size: 0.8rem; padding: 4px 8px;">
+                Next book to read
+            </button>
+            <button type="button" class="btn btn-geo-quick quick-btn flex-grow-1" data-msg="Recommend a movie based on a book" style="font-size: 0.8rem; padding: 4px 8px;">
+                Movie based on book
+            </button>
+            <button type="button" class="btn btn-geo-quick quick-btn flex-grow-1" data-msg="Something else" style="font-size: 0.8rem; padding: 4px 8px;">
+                Other
+            </button>
+        </div>
+        <div class="card-footer p-2">
+            <form id="chat-form" class="d-flex gap-2">
+                <input id="user-input" class="form-control" placeholder="Ask...">
+                <button class="btn btn-dark">
+                    <i data-lucide="send"></i>
+                </button>
+            </form>
+        </div>
+
+    </div>
+</div>
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+    const toggle = document.getElementById("chat-toggle");
+    const widget = document.getElementById("chat-widget");
+    const icon = toggle.querySelector("i");
+    const form = document.getElementById("chat-form");
+    const input = document.getElementById("user-input");
+    const chatWindow = document.getElementById("chat-window");
+    const userName = "{{ current_user.name }}"
+
+    let isOpen = false;
+
+    function openChat() {
+        widget.classList.remove("chat-hidden");
+        isOpen = true;
+
+        if (icon) {
+            icon.setAttribute("data-lucide", "x");
+            if (typeof lucide !== 'undefined') {
+                lucide.createIcons();
+            }
+        }
+
+        const welcomeMessageExists = chatWindow.querySelector(".welcome");
+
+        if (!welcomeMessageExists) {
+            chatWindow.insertAdjacentHTML("beforeend", `
+                <div class="chat-row welcome">
+                    <div class="chat-ai">
+                        Hello, ${userName}!<br>
+                        I am your <b>Personal Reading Assistant</b>.<br>
+                        How can I help you?
+                    </div>
+                </div>
+            `);
+        }
+
+        chatWindow.scrollTop = chatWindow.scrollHeight;
+    }
+
+    function closeChat() {
+        widget.classList.add("chat-hidden");
+        isOpen = false;
+        icon.setAttribute("data-lucide", "bot");
+        if (window.lucide) lucide.createIcons();
+    }
+
+    function toggleChat() {
+        if (isOpen) closeChat();
+        else openChat();
+    }
+
+    function scrollToBottom() {
+        chatWindow.scrollTop = chatWindow.scrollHeight;
+    }
+
+    toggle.addEventListener("click", function (e) {
+        e.stopPropagation();
+        toggleChat();
+    });
+
+    document.addEventListener("click", function (e) {
+        const isClickInside = widget.contains(e.target) || toggle.contains(e.target);
+        if (!isClickInside && isOpen) closeChat();
+    });
+
+    document.addEventListener("click", function (e) {
+        if (e.target.classList.contains("quick-btn")) {
+            e.preventDefault();
+            const message = e.target.dataset.msg;
+            sendMessage(message);
+        }
+    });
+
+    form.addEventListener("submit", function (e) {
+        e.preventDefault();
+        const message = input.value.trim();
+        if (!message) return;
+        sendMessage(message);
+    });
+
+    async function sendMessage(message) {
+        chatWindow.insertAdjacentHTML("beforeend", `
+            <div class="chat-row">
+                <div class="chat-user">${escapeHtml(message)}</div>
+            </div>
+        `);
+
+        input.value = "";
+        scrollToBottom();
+
+        try {
+            const res = await fetch("{{ url_for('chat') }}", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ message })
+            });
+
+            const data = await res.json();
+
+            if (res.status === 401) {
+                chatWindow.insertAdjacentHTML("beforeend", `
+                    <div class="login-message small text-warning">
+                        ${data.message || 'Please login to use the assistant'}
+                    </div>
+                `);
+                scrollToBottom();
+                return;
+            }
+
+            if (!res.ok) {
+                throw new Error(data.response || data.error || "Unknown server error");
+            }
+
+            const formatted = marked.parse(data.response);
+            chatWindow.insertAdjacentHTML("beforeend", `
+                <div class="chat-row">
+                    <div class="chat-ai chat-markdown-content">
+                        ${formatted}
+                    </div>
+                </div>
+            `);
+
+        } catch (err) {
+            chatWindow.insertAdjacentHTML("beforeend", `
+                <div class="text-danger small">
+                    Error: ${err.message || 'Server not reachable'}
+                </div>
+            `);
+        }
+
+        scrollToBottom();
+    }
+
+    function escapeHtml(str) {
+        return str.replace(/[&<>'"]/g,
+            tag => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;' }[tag] || tag)
+        );
+    }
+});
+</script>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 <script>lucide.createIcons();</script>
 </body>

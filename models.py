@@ -17,9 +17,10 @@ class User(db.Model,UserMixin):
     name: Mapped[str] = mapped_column(String, unique=True, nullable=False)
     password_hash: Mapped[str] = mapped_column(String, nullable=False)
 
-    list_of_reading_books: Mapped[List["UserBooks"]] = relationship(back_populates="user_reader", cascade="all, delete",
+    list_of_reading_books: Mapped[List["UserBooks"]] = relationship(back_populates="user_reader", cascade="all, delete-orphan",
         passive_deletes=True)
-    list_of_communities_of_user: Mapped[List["UserCommunities"]] = relationship(back_populates="user_member")
+    list_of_communities_of_user: Mapped[List["UserCommunities"]] = relationship(back_populates="user_member", cascade="all, delete-orphan",
+        passive_deletes=True)
 
     def set_password(self, password: str)-> None:
         """Hashes the password and stores it in the database.
@@ -77,7 +78,7 @@ class Book(db.Model):
     genre: Mapped[str] = mapped_column(String, nullable=True)
     cover_url: Mapped[str] = mapped_column(String, nullable=True)
 
-    list_of_readers: Mapped[List["UserBooks"]] = relationship(back_populates="reading_book")
+    list_of_readers: Mapped[List["UserBooks"]] = relationship(back_populates="reading_book", cascade="all, delete-orphan", passive_deletes=True)
     author_of_book: Mapped["Author"] = relationship(back_populates="books")
 
     def __repr__(self)-> str:
@@ -119,7 +120,7 @@ class UserBooks(db.Model):
 
     @validates('rating')
     def validate_rating(self, key: str, value: Optional[float]) -> Optional[float]:
-        """Validates that the book rating is strictly between 0.0 and 10.0.
+        """Validates that the book rating is between 0.0 and 10.0.
 
         Args:
             key: The name of the field being validated.
@@ -161,7 +162,7 @@ class Author(db.Model):
     birth_date: Mapped[date] = mapped_column(Date, nullable=True)
     death_date: Mapped[date] = mapped_column(Date, nullable=True)
 
-    books: Mapped[List["Book"]] = relationship(back_populates="author_of_book")
+    books: Mapped[List["Book"]] = relationship(back_populates="author_of_book",cascade="all, delete-orphan",passive_deletes=True)
 
     def __repr__(self)-> str:
         return f"Author (id={self.author_id}, name={self.author_name})"
@@ -176,7 +177,7 @@ class Community(db.Model):
     community_name: Mapped[str] = mapped_column(String, unique=True, nullable=False)
     about_community: Mapped[str] = mapped_column(String, nullable=True)
 
-    list_of_members: Mapped[List["UserCommunities"]] = relationship(back_populates="user_community", cascade="all, delete",
+    list_of_members: Mapped[List["UserCommunities"]] = relationship(back_populates="user_community", cascade="all, delete-orphan",
         passive_deletes=True)
 
     @validates('community_name')

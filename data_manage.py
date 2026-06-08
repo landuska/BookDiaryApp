@@ -13,7 +13,7 @@ class DataManager:
 # *********************** USER ***************************
 
 
-    def add_user(self, name: str, password: str) -> None:
+    def add_user(self,name: str, password: str) -> None:
         """Registers a new user in the system.
 
         Args:
@@ -24,14 +24,14 @@ class DataManager:
             ValueError: If a user with the given username already exists.
             Exception: If any database commit error occurs.
         """
-        existing_user = db.session.query(User).filter_by(name=name).first()
-        if existing_user:
-            raise ValueError(f"User with username '{name}' already exists.")
         try:
             new_user = User(name=name)
             new_user.set_password(password)
             db.session.add(new_user)
             db.session.commit()
+        except IntegrityError:
+            db.session.rollback()
+            raise ValueError(f"User with username '{name}' already exists.")
         except Exception:
             db.session.rollback()
             raise
@@ -55,7 +55,7 @@ class DataManager:
         if user and user.check_password(password):
             return user
 
-        raise ValueError(f"Invalid username or password, please, try again.")
+        raise ValueError(f"Invalid username or password. Please, try again.")
 
 
 # *********************** BOOK  ***************************
@@ -76,7 +76,7 @@ class DataManager:
             db.session.commit()
         except IntegrityError:
             db.session.rollback()
-            raise ValueError(f"Book {book} was already added to the user's library.")
+            raise ValueError(f"Book {book.title} already exists.")
         except Exception:
             db.session.rollback()
             raise
@@ -91,16 +91,14 @@ class DataManager:
         Returns:
             List[Book]: A list of matching Book objects.
         """
-        all_books = self.get_entities(Book)
+        query = db.session.query(Book)
 
-        if all_books:
-            filtered_books = all_books
-            if genre and genre != "All":
-                filtered_books = [book for book in filtered_books if book.genre == genre]
+        if genre and genre != "All":
+            query = query.filter(Book.genre == genre)
 
-            return filtered_books
+        books = query.all()
 
-        return []
+        return books
 
     def add_book_to_user(self, user_id: int, book_id: int) -> None:
         """Adds an existing book to a user's personal library.
@@ -157,29 +155,22 @@ class DataManager:
         Returns:
             List[UserBooks]: A list of filtered UserBooks relationship objects.
         """
-        all_books = self.get_books_by_user(user_id)
+        query = db.session.query(UserBooks).join(UserBooks.reading_book).filter(UserBooks.user_id == user_id)
 
-        if all_books:
-            filtered_books = all_books
+        if status and status != "All":
+            query = query.filter(UserBooks.status == status)
 
-            if status and status != 'All':
-                filtered_books = [book for book in filtered_books if book.status == status]
+        if min_rating and min_rating > 0:
+            query = query.filter(UserBooks.rating >= min_rating)
 
-            if min_rating and min_rating > 0:
-                filtered_books = [book for book in filtered_books if book.rating is not None and book.rating >= min_rating]
+        if genre and genre != "All":
+            query = query.filter(Book.genre == genre)
 
-            if genre and genre != "All":
-                filtered_books = [
-                    book for book in filtered_books
-                    if book.reading_book and book.reading_book.genre == genre
-                ]
-
-            return filtered_books
-
-        return []
+        books = query.all()
+        return books
 
 
-    def get_user_genres(self, user_id: int)-> List[str]:
+    def get_user_genres(self, user_id: int) -> List[str]:
         """Retrieves a sorted list of unique book genres in the user's library.
 
         Args:
@@ -188,15 +179,8 @@ class DataManager:
         Returns:
             List[str]: A sorted list of unique genre names.
         """
-        user_books = self.get_books_by_user(user_id)
-
-        if user_books:
-            genres = set()
-            for pair in user_books:
-                if pair.reading_book and pair.reading_book.genre:
-                    genres.add(pair.reading_book.genre)
-            return sorted(list(genres))
-        return []
+        genres_tuples = db.session.query(Book.genre).join(UserBooks).filter(UserBooks.user_id == user_id).distinct().all()
+        return sorted([g[0] for g in genres_tuples if g[0] is not None])
 
 
     def update_user_book(self,
@@ -232,7 +216,7 @@ class DataManager:
                 db.session.rollback()
                 raise
         else:
-            raise ValueError(f"User {user_id} or Book {book_id} is not found.")
+            raise ValueError("UserBooks entry not found")
 
 
 # *********************** AUTHOR ***************************
@@ -250,19 +234,19 @@ class DataManager:
             ValueError: If an author with the same name already exists.
             Exception: If any database commit error occurs.
         """
-        existing_author = db.session.query(Author).filter_by(author_name=name).first()
-        if existing_author:
-            raise ValueError(f"Author with name '{name}' already exists.")
         try:
             new_author = Author(author_name=name, birth_date=birth_date, death_date=death_date)
             db.session.add(new_author)
             db.session.commit()
+        except IntegrityError:
+            db.session.rollback()
+            raise ValueError(f"Author with name '{name}' already exists.")
         except Exception:
             db.session.rollback()
             raise
 
 
-    def get_authors_by_user(self, user_id: int)-> List[Author]:
+    def get_authors_by_user(self, user_id: int) -> List[Author]:
         """Retrieves a list of unique authors from the user's book collection.
 
         Args:
@@ -271,14 +255,9 @@ class DataManager:
         Returns:
             List[Author]: A list of unique Author objects.
         """
-        user_books = db.session.query(UserBooks).filter_by(user_id=user_id).all()
-        if user_books:
-            authors = set()
-            for pair in user_books:
-                if pair.reading_book and pair.reading_book.author_of_book:
-                    authors.add(pair.reading_book.author_of_book)
-            return list(authors)
-        return []
+
+        authors = db.session.query(Author).join(Book).join(UserBooks, UserBooks.book_id == Book.book_id).filter(UserBooks.user_id == user_id).distinct().all()
+        return authors
 
 
     def get_books_by_author(self, author_id: int)-> List[Book]:
@@ -310,13 +289,13 @@ class DataManager:
             ValueError: If a community with the same name already exists.
             Exception: If any database commit error occurs.
         """
-        existing_community = db.session.query(Community).filter_by(community_name=name).first()
-        if existing_community:
-            raise ValueError(f"Community with name '{name}' already exists.")
         try:
             new_community = Community(community_name=name, about_community=description)
             db.session.add(new_community)
             db.session.commit()
+        except IntegrityError:
+            db.session.rollback()
+            raise ValueError(f"Community with name '{name}' already exists.")
         except Exception:
             db.session.rollback()
             raise
@@ -342,6 +321,8 @@ class DataManager:
             except Exception:
                 db.session.rollback()
                 raise
+        else:
+            raise ValueError(f"Community {community_id} is not found.")
 
 
     def add_user_to_community(self, user_id: int, community_id: int) -> None:
@@ -408,12 +389,12 @@ class DataManager:
 # *********************** GENERAL ***************************
 
 
-    def get_entities(self, model: Type[db.Model])-> List[db.Model]:
+    def get_entities(self, model: Type[db.Model]) -> List[db.Model]:
         """Retrieves all records for a given database model."""
         return db.session.query(model).all()
 
 
-    def get_entity_by_multiple_fields(self, model: Type[db.Model], **kwargs)-> Optional[db.Model]:
+    def get_entity_by_multiple_fields(self, model: Type[db.Model], **kwargs) -> Optional[db.Model]:
         """Finds the first record matching arbitrary keyword filter arguments."""
         return db.session.query(model).filter_by(**kwargs).first()
 

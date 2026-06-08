@@ -27,7 +27,7 @@
                 <li class="nav-item dropdown">
                     <a class="nav-link dropdown-toggle fw-bold user-highlight" href="#" id="userDropdown" role="button"
                        data-bs-toggle="dropdown" aria-expanded="false">
-                        {{ current_user.name }}
+                        {{ current_user.name |capitalize }}
                     </a>
                     <ul class="dropdown-menu dropdown-menu-end dropdown-geo-menu" aria-labelledby="userDropdown">
                         <li><a class="dropdown-item" href="{{ url_for('user_books', username=current_user.name) }}">My Books</a></li>
@@ -71,7 +71,7 @@
     </div>
 </div>
 
-<div id="chat-widget" class="chat-hidden" style="position: fixed; bottom: 20px; right: 20px; width: 420px; height: 450px; z-index: 9999;">
+<div id="chat-widget" class="chat-hidden" style="position: fixed; bottom: 20px; right: 20px; width: 580px; height: 450px; z-index: 9999;">
     <div class="card h-100 border-0 overflow-hidden">
         <div class="card-header">
             Your personal AI Assistant
@@ -86,7 +86,7 @@
                 Movie based on book
             </button>
             <button type="button" class="btn btn-geo-quick quick-btn flex-grow-1" data-msg="Something else" style="font-size: 0.8rem; padding: 4px 8px;">
-                Add a book club meeting
+                Something else
             </button>
         </div>
         <div class="card-footer p-2">

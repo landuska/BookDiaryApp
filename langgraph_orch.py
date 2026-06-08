@@ -47,6 +47,7 @@ def get_movie_adaptations(book_title: str) -> str:
     )
     return search.invoke(f"movie or TV series adaptation of the book {book_title}")
 
+
 tools = [get_user_reading_history, get_movie_adaptations]
 
 class AgentState(TypedDict):

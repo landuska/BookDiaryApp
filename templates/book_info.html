@@ -204,15 +204,11 @@
 
                             <label for="edit-note"
                                    class="display-area d-block">
-
-                                <div class="notes-box p-3 rounded">
-                                    {% if book.note and book.note.strip() %}
-                                    {{ book.note }}
+                                <div class="notes-box p-3 rounded">{% if book.note and book.note.strip() %}{{ book.note }}
                                     {% else %}
                                     <span class="text-muted">No notes yet.</span>
                                     {% endif %}
                                 </div>
-
                             </label>
 
                             {% if is_owner %}
@@ -220,15 +216,11 @@
                             <div class="input-field mt-2">
                             <textarea name="note"
                                       class="form-control"
-                                      rows="8"
-                                      style="border: 1px solid var(--geo-pastel);">
-                                {{ book.note or '' }}
-                            </textarea>
+                                      rows="3"
+                                      style="border: 1px solid var(--geo-pastel);">{{ book.note or '' }}</textarea>
                             </div>
-
                             {% endif %}
-
-                        </div>
+                            </div>
 
                     </div>
 

@@ -148,7 +148,7 @@ class DataManager:
 
         Args:
             user_id: The ID of the user.
-            status: Reading status filter (e.g., 'Reading', 'Completed').
+            status: Reading status filter (e.g., 'Currently Reading', 'Completed').
             min_rating: Minimum acceptable rating.
             genre: Genre name filter.
 

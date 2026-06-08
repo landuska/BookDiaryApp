@@ -266,7 +266,7 @@ def login():
         user = data_manager.user_authorisation(name=username, password=password)
         if user:
             login_user(user)
-            flash(f"Welcome back, {current_user.name}!")
+            flash(f"Welcome back, {current_user.name.capitalize()}!")
             return redirect(url_for('user_page', username=current_user.name))
 
     except ValueError as e:
@@ -871,6 +871,7 @@ def chat():
     """
     if GLOBAL_AGENT_APP is None:
         return jsonify({"error": "AI Assistant is not initialized"}), 500
+
     user_message = request.json.get("message", "").strip()
 
     if not user_message:

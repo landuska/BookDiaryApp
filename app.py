@@ -295,6 +295,30 @@ def user_page(username):
     return render_template('user_page.html', username=username)
 
 
+@app.route('/<username>/update_taste_profile', methods=['GET', 'POST'])
+@login_required
+def generate_taste_profile(username):
+    try:
+        books = data_manager.get_books_by_user(current_user.id)
+
+        if not books:
+            flash("You have not books yet.")
+            return redirect(url_for('user_page', username=username))
+
+        profile_data = user_preferences(books)
+
+        if profile_data:
+            data_manager.update_user_profile(current_user.id, profile_data)
+            flash("Your profile has been updated.")
+        else:
+            flash("Failed to update your profile.")
+
+    except Exception as e:
+        print(f"Error generating profile: {e}")
+
+    return redirect(url_for('user_page', username=username))
+
+
 @app.route('/<username>/logout')
 @login_required
 def logout(username):
@@ -878,7 +902,12 @@ def chat():
         return jsonify({"error": "Invalid message"}), 400
 
     initial_input = {"messages": [HumanMessage(content=user_message)]}
-    config = {"configurable": {"thread_id": str(current_user.id)}}
+    config = {
+        "configurable": {
+            "thread_id": f"user_{current_user.id}",
+            "user_id": current_user.id
+        }
+    }
     try:
         result = GLOBAL_AGENT_APP.invoke(initial_input, config)
         ai_response = result["messages"][-1].content

@@ -1,7 +1,10 @@
-from models import User, Book, Author, Community, UserBooks, UserCommunities, db
-from sqlalchemy.exc import IntegrityError
 from datetime import date
 from typing import Type, Optional, List
+
+from sqlalchemy.exc import IntegrityError
+
+from models import User, Book, Author, Community, UserBooks, UserCommunities, UserTasteProfile, db
+
 
 class DataManager:
     """A data manager class handling CRUD operations for the application's business logic.
@@ -9,11 +12,9 @@ class DataManager:
     Provides an interface to manage users, books, authors, and communities using SQLAlchemy.
     """
 
+    # *********************** USER ***************************
 
-# *********************** USER ***************************
-
-
-    def add_user(self,name: str, password: str) -> None:
+    def add_user(self, name: str, password: str) -> None:
         """Registers a new user in the system.
 
         Args:
@@ -36,7 +37,6 @@ class DataManager:
             db.session.rollback()
             raise
 
-
     def user_authorisation(self, name: str, password: str) -> Optional[User]:
         """Authenticates a user with their username and password.
 
@@ -57,9 +57,7 @@ class DataManager:
 
         raise ValueError(f"Invalid username or password. Please, try again.")
 
-
-# *********************** BOOK  ***************************
-
+    # *********************** BOOK  ***************************
 
     def add_book(self, book: Book) -> None:
         """Adds a new book to the global catalog.
@@ -80,7 +78,6 @@ class DataManager:
         except Exception:
             db.session.rollback()
             raise
-
 
     def get_general_filtered_books(self, genre: str = None) -> List[Book]:
         """Retrieves all books from the catalog with genre filtering.
@@ -111,7 +108,7 @@ class DataManager:
             ValueError: If the book is already in the user's library.
             Exception: If any database commit error occurs.
         """
-        existing_book_by_user = db.session.query(UserBooks).filter_by(user_id=user_id,book_id=book_id).first()
+        existing_book_by_user = db.session.query(UserBooks).filter_by(user_id=user_id, book_id=book_id).first()
 
         if existing_book_by_user:
             raise ValueError(f"This book is already in your library.")
@@ -127,7 +124,6 @@ class DataManager:
             db.session.rollback()
             raise
 
-
     def get_books_by_user(self, user_id: int) -> List[UserBooks]:
         """Retrieves all UserBooks relationship records for a specific user.
 
@@ -142,8 +138,8 @@ class DataManager:
             return user.list_of_reading_books
         return []
 
-
-    def get_filtered_books(self, user_id: int, status: str = None, min_rating: float = None, genre: str = None) -> List[UserBooks]:
+    def get_filtered_books(self, user_id: int, status: str = None, min_rating: float = None, genre: str = None) -> List[
+        UserBooks]:
         """Retrieves filtered books from a user's personal library.
 
         Args:
@@ -169,7 +165,6 @@ class DataManager:
         books = query.all()
         return books
 
-
     def get_user_genres(self, user_id: int) -> List[str]:
         """Retrieves a sorted list of unique book genres in the user's library.
 
@@ -179,16 +174,16 @@ class DataManager:
         Returns:
             List[str]: A sorted list of unique genre names.
         """
-        genres_tuples = db.session.query(Book.genre).join(UserBooks).filter(UserBooks.user_id == user_id).distinct().all()
+        genres_tuples = db.session.query(Book.genre).join(UserBooks).filter(
+            UserBooks.user_id == user_id).distinct().all()
         return sorted([g[0] for g in genres_tuples if g[0] is not None])
 
-
     def update_user_book(self,
-                                user_id: int,
-                                book_id: int,
-                                new_status: str = None,
-                                new_rating: float = None,
-                                new_note: str = None) -> None:
+                         user_id: int,
+                         book_id: int,
+                         new_status: str = None,
+                         new_rating: float = None,
+                         new_note: str = None) -> None:
         """Updates metadata (status, rating, note) of a book in a user's library.
 
         Args:
@@ -218,9 +213,52 @@ class DataManager:
         else:
             raise ValueError("UserBooks entry not found")
 
+    def update_user_profile(self, user_id: int, profile_data: dict) -> None:
+        """Updates the user's reading taste profile or creates a new one if it doesn't exist.
 
-# *********************** AUTHOR ***************************
+        Args:
+            user_id (int): The unique identifier of the user.
+            profile_data (dict): A dictionary containing inferred user preferences
+            (e.g., favorite genres, tones, and text summary).
 
+        Raises:
+            Exception: Re-raises any exception caught during the database transaction
+            after performing a rollback.
+        """
+        user_profile = db.session.get(UserTasteProfile, user_id)
+        try:
+            if not user_profile:
+                user_profile = UserTasteProfile(
+                    user_id=user_id,
+                    profile_data=profile_data,
+                    update_at=date.today()
+                )
+                db.session.add(user_profile)
+
+            else:
+                user_profile.profile_data = profile_data
+                user_profile.update_at = date.today()
+
+            db.session.commit()
+
+        except Exception:
+            db.session.rollback()
+            raise
+
+    def get_user_taste_profile(self, user_id: int) -> UserTasteProfile | None:
+        """Fetches the user's reading taste profile from the database.
+        Args:
+            user_id: The ID of the user.
+
+        Returns:
+        UserTasteProfile | None: The UserTasteProfile object associated with the user
+        if it exists; otherwise, None if no profile has been generated yet.
+        """
+        taste_profile = db.session.get(UserTasteProfile, user_id)
+        return taste_profile
+
+
+    # *********************** AUTHOR ***************************
 
     def add_author(self, name: str, birth_date: date = None, death_date: date = None) -> None:
         """Adds a new author to the system.
@@ -245,7 +283,6 @@ class DataManager:
             db.session.rollback()
             raise
 
-
     def get_authors_by_user(self, user_id: int) -> List[Author]:
         """Retrieves a list of unique authors from the user's book collection.
 
@@ -256,11 +293,11 @@ class DataManager:
             List[Author]: A list of unique Author objects.
         """
 
-        authors = db.session.query(Author).join(Book).join(UserBooks, UserBooks.book_id == Book.book_id).filter(UserBooks.user_id == user_id).distinct().all()
+        authors = db.session.query(Author).join(Book).join(UserBooks, UserBooks.book_id == Book.book_id).filter(
+            UserBooks.user_id == user_id).distinct().all()
         return authors
 
-
-    def get_books_by_author(self, author_id: int)-> List[Book]:
+    def get_books_by_author(self, author_id: int) -> List[Book]:
         """Retrieves all books written by a specific author.
 
         Args:
@@ -274,9 +311,7 @@ class DataManager:
             return author.books
         return []
 
-
-# *********************** COMMUNITY ***************************
-
+    # *********************** COMMUNITY ***************************
 
     def create_community(self, name: str, description: str = None) -> None:
         """Creates a new community.
@@ -299,7 +334,6 @@ class DataManager:
         except Exception:
             db.session.rollback()
             raise
-
 
     def update_community(self, community_id: int, name: str, description: str) -> None:
         """Updates the name and description of an existing community.
@@ -324,7 +358,6 @@ class DataManager:
         else:
             raise ValueError(f"Community {community_id} is not found.")
 
-
     def add_user_to_community(self, user_id: int, community_id: int) -> None:
         """Joins/adds a user to a specific community.
 
@@ -347,8 +380,7 @@ class DataManager:
             db.session.rollback()
             raise
 
-
-    def get_communities_by_user(self, user_id: int)-> List[Community]:
+    def get_communities_by_user(self, user_id: int) -> List[Community]:
         """Retrieves all communities a specific user belongs to.
 
         Args:
@@ -361,7 +393,6 @@ class DataManager:
         if user:
             return user.list_of_communities_of_user
         return []
-
 
     def remove_user_from_community(self, user_id: int, community_id: int) -> None:
         """Removes a user from a community (leave community).
@@ -385,24 +416,19 @@ class DataManager:
         else:
             raise ValueError("User is not a member of this community.")
 
-
-# *********************** GENERAL ***************************
-
+    # *********************** GENERAL ***************************
 
     def get_entities(self, model: Type[db.Model]) -> List[db.Model]:
         """Retrieves all records for a given database model."""
         return db.session.query(model).all()
 
-
     def get_entity_by_multiple_fields(self, model: Type[db.Model], **kwargs) -> Optional[db.Model]:
         """Finds the first record matching arbitrary keyword filter arguments."""
         return db.session.query(model).filter_by(**kwargs).first()
 
-
-    def get_entity_by_id(self, model: Type[db.Model], ent_id: int)-> Optional[db.Model]:
+    def get_entity_by_id(self, model: Type[db.Model], ent_id: int) -> Optional[db.Model]:
         """Finds a single record of a model by its primary key (ID)."""
         return db.session.get(model, ent_id)
-
 
     def delete(self, entity) -> None:
         """Deletes any given model instance from the database.
@@ -419,4 +445,3 @@ class DataManager:
         except Exception:
             db.session.rollback()
             raise
-

@@ -1,5 +1,5 @@
 from flask_sqlalchemy import SQLAlchemy
-from sqlalchemy import Date, Integer, String, Float, ForeignKey
+from sqlalchemy import Date, Integer, String, Float, ForeignKey, JSON
 from sqlalchemy.orm import Mapped, mapped_column, relationship, validates
 from datetime import date
 from typing import List, Optional
@@ -21,6 +21,9 @@ class User(db.Model,UserMixin):
         passive_deletes=True)
     list_of_communities_of_user: Mapped[List["UserCommunities"]] = relationship(back_populates="user_member", cascade="all, delete-orphan",
         passive_deletes=True)
+    taste_profile: Mapped["UserTasteProfile"] = relationship(back_populates="user",uselist=False,
+        cascade="all, delete-orphan"
+    )
 
     def set_password(self, password: str)-> None:
         """Hashes the password and stores it in the database.
@@ -225,3 +228,16 @@ class UserCommunities(db.Model):
 
     def __repr__(self)-> str:
         return f"UserCommunities (user_id={self.user_id}, community_id={self.community_id})"
+
+class UserTasteProfile(db.Model):
+    """Represents a user's reading taste profile."""
+
+    __tablename__ = 'user_taste_profile'
+
+    user_id: Mapped[int] = mapped_column(Integer, ForeignKey('users.id', ondelete='CASCADE'), primary_key=True)
+    profile_data: Mapped[dict] = mapped_column(JSON, nullable=True)
+    update_at: Mapped[date] = mapped_column(Date, nullable=True)
+    user: Mapped["User"] = relationship(back_populates="taste_profile")
+
+    def __repr__(self)-> str:
+        return f"UserTasteProfile (user_id={self.user_id}, profile_data={self.profile_data})"

@@ -26,29 +26,49 @@ tavily_api_key = os.getenv("TAVILY_API_KEY").strip().replace("'", "").replace('"
 client = OpenAI(api_key=openai_api_key)
 
 @tool
-def get_user_reading_history(user_id: int) -> str:
-    """Use this tool to fetch the user's library history and personal notes and recommend new book."""
-    books = data_manager.get_books_by_user(user_id)
+def get_user_reading_profile(user_id: int) -> str:
+    """ Use this tool to fetch the user's analyzed reading taste profile (genres, tones, summary)
+        to make highly personalized new book recommendations.
+    """
+    taste_profile = data_manager.get_user_taste_profile(user_id)
 
-    if not books:
-        return "The user has no books or notes in their library yet."
+    if taste_profile and taste_profile.profile_data:
+        data = taste_profile.profile_data
+        genres = ", ".join(data.get("genres", []))
+        tones = ", ".join(data.get("tones", []))
+        summary = data.get("summary", "No summary available.")
 
-    result = "User's Library and Notes:\n"
-    for book in books:
-        result += f"- Book: {book.reading_book.title}, Note: {book.note}\n"
+        return (
+            f"User Reading Taste Profile:\n"
+            f"- Favorite Genres: {genres}\n"
+            f"- Preferred Tones & Styles: {tones}\n"
+            f"- Taste Summary: {summary}\n"
+        )
+
+    user_books = data_manager.get_books_by_user(user_id)
+    if not user_books:
+        return "The user has no reading profile and no books in their library yet."
+
+    result = "User has no generated profile yet. Here is their raw Library History:\n"
+    for book in user_books:
+        title = getattr(book.reading_book, 'title', 'Unknown Title') if hasattr(book, 'reading_book') else getattr(book, 'title', 'Unknown Title')
+        note = getattr(book, 'note', '')
+        result += f"- Book: {title}, Note: {note}\n"
+
     return result
+
 
 @tool
 def get_movie_adaptations(book_title: str) -> str:
     """ Use this tool to check if a book has a movie or TV adaptation."""
     search = TavilySearch(
     max_results=5,
-    api_key=tavily_api_key
+    tavily_api_key=tavily_api_key
     )
     return search.invoke(f"movie or TV series adaptation of the book {book_title}")
 
 
-tools = [get_user_reading_history, get_movie_adaptations]
+tools = [get_user_reading_profile, get_movie_adaptations]
 
 class AgentState(TypedDict):
     messages: Annotated[Sequence[BaseMessage], operator.add]
@@ -60,24 +80,36 @@ def create_agent():
 
     def call_model(state: AgentState, config: RunnableConfig):
         messages = state["messages"]
-        user_id = config.get("configurable", {}).get("thread_id", "Unknown")
+
+        cfg = config.get("configurable", {})
+        user_id = cfg.get("user_id", cfg.get("thread_id", 0))
+
+        try:
+            user_id = int(user_id)
+        except (ValueError, TypeError):
+            user_id = 0
+
         system_prompt = SystemMessage(content=f"""
                 You are a personal reading assistant inside a books application.
                 Your job is to assist users with two types of requests: book recommendations or finding movie/TV adaptations.
-                CRITICAL: The current user ID is {user_id}. Use this EXACT integer ID when calling the tool `get_user_reading_history`. 
+                
+                CRITICAL: The current user ID is {user_id}. Use this EXACT integer ID when calling the tool `get_user_reading_profile`. 
                 Never guess it and never reveal this ID to the user.
+                
                 Depending on the user's request, follow these strict Markdown formatting rules:
                 
                 ---
                 
                 ### CASE 1: USER ASKS FOR BOOK RECOMMENDATIONS
-                Use the provided tools to check their reading history. Give 2-3 highly personalized recommendations.
-                Format like this:
+                Use the `get_user_reading_profile` tool to check their analyzed reading taste (favorite genres, preferred tones, and taste summary). 
+                Based on this rich data, give 2-3 highly personalized recommendations.
+                
+                Format your response exactly like this:
                 ### Personal Book Recommendations
                 1. **[Book Title]** by *[Author]*
-                   Explain exactly why they will like it based on their taste.
+                   Explain exactly why they will like it based on their specific taste profile (genres/tones).
                 2. **[Book Title]** by *[Author]*
-                   Explain the connection to their previous books.
+                   Explain how this connects to their overall reading preferences and summary.
                 
                 ---
                 

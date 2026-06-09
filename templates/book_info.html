@@ -59,14 +59,17 @@
                     {{ book.reading_book.author_of_book.author_name }}
                 </p>
 
-                <form method="POST">
+                <form method="POST" id="ai-summary-form">
                     <button type="submit"
-                            class="btn w-100 mb-2 fw-bold"
+                            id="ai-summary-btn"
+                            class="btn w-100 mb-2 fw-bold d-flex align-items-center justify-content-center gap-2"
                             style="border-radius: 12px;
                                    background: #f8f9fa;
                                    border: 1px solid var(--geo-pastel);
-                                   color: var(--geo-dark-blue);">
-                        ✨ Generate AI Summary
+                                   color: var(--geo-dark-blue);
+                                   transition: all 0.2s ease;">
+                        <span id="btn-icon"><i data-lucide="sparkles"></i></span>
+                        <span id="btn-text">Generate AI Summary</span>
                     </button>
                 </form>
 
@@ -167,7 +170,7 @@
                             <span style="color: var(--geo-orange);
                                          font-size: 1.4rem;
                                          font-weight: 700;">
-                                ⭐ {{ book.rating }}
+                                <i data-lucide="star"></i> {{ book.rating }}
                             </span>
 
                             </label>
@@ -261,7 +264,7 @@
                  style="background: var(--geo-dark-blue);
                         color: white;">
 
-                <h5 class="fw-bold">AI Book Summary</h5>
+                <h5 class="fw-bold"> <i data-lucide="sparkles"></i> AI Book Summary</h5>
 
                 <button class="btn-close btn-close-white"
                         data-bs-dismiss="modal"></button>
@@ -293,14 +296,32 @@
     </div>
 
 </div>
-
+{% endif %}
 <script>
     document.addEventListener("DOMContentLoaded", function () {
         new bootstrap.Modal(document.getElementById('summaryModal')).show();
     });
 </script>
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        const aiForm = document.getElementById('ai-summary-form');
+        const aiBtn = document.getElementById('ai-summary-btn');
+        const btnText = document.getElementById('btn-text');
+        const btnIcon = document.getElementById('btn-icon');
 
-{% endif %}
+        if (aiForm && aiBtn) {
+            aiForm.addEventListener('submit', function () {
+                aiBtn.disabled = true;
+                aiBtn.style.opacity = '0.75';
+                aiBtn.style.cursor = 'not-allowed';
+
+                btnText.textContent = 'Analyzing book details...';
+
+                btnIcon.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>';
+            });
+        }
+    });
+</script>
 <style>
     .edit-toggle { display: none; }
     .input-field { display: none; }

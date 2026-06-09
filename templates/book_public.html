@@ -60,19 +60,19 @@
 
                 <div class="border-top pt-3 mt-3">
 
-                    <form action="{{ url_for('book_public', book_id=book.book_id) }}"
-                          method="POST">
-
-                        <button type="submit"
-                                class="btn w-100 mb-2 fw-bold"
-                                style="border-radius: 12px;
-                                       background: #f8f9fa;
-                                       color: var(--geo-dark-blue);
-                                       border: 1px solid var(--geo-pastel);">
-                            ✨ Generate AI Summary
-                        </button>
-
-                    </form>
+                <form method="POST" id="ai-summary-form">
+                    <button type="submit"
+                            id="ai-summary-btn"
+                            class="btn w-100 mb-2 fw-bold d-flex align-items-center justify-content-center gap-2"
+                            style="border-radius: 12px;
+                                   background: #f8f9fa;
+                                   border: 1px solid var(--geo-pastel);
+                                   color: var(--geo-dark-blue);
+                                   transition: all 0.2s ease;">
+                        <span id="btn-icon"><i data-lucide="sparkles"></i></span>
+                        <span id="btn-text">Generate AI Summary</span>
+                    </button>
+                </form>
 
                     <form action="{{ url_for('add_book', username=current_user.name) }}"
                           method="POST">
@@ -156,14 +156,32 @@
 
     </div>
 </div>
-
+{% endif %}
 <script>
     document.addEventListener("DOMContentLoaded", function () {
         var modal = new bootstrap.Modal(document.getElementById('summaryModal'));
         modal.show();
     });
 </script>
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        const aiForm = document.getElementById('ai-summary-form');
+        const aiBtn = document.getElementById('ai-summary-btn');
+        const btnText = document.getElementById('btn-text');
+        const btnIcon = document.getElementById('btn-icon');
 
-{% endif %}
+        if (aiForm && aiBtn) {
+            aiForm.addEventListener('submit', function () {
+                aiBtn.disabled = true;
+                aiBtn.style.opacity = '0.75';
+                aiBtn.style.cursor = 'not-allowed';
+
+                btnText.textContent = 'Analyzing book details...';
+
+                btnIcon.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>';
+            });
+        }
+    });
+</script>
 
 {% endblock %}

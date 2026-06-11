@@ -2,15 +2,21 @@ import os
 from dotenv import load_dotenv
 from openai import OpenAI
 import json
+from data_manage import DataManager
+from langchain_community.vectorstores import FAISS
+from langchain_openai import OpenAIEmbeddings
+from langchain_core.documents import Document
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-path = os.path.join(BASE_DIR, "config", ".env")
+PATH = os.path.join(BASE_DIR, "config", ".env")
 
-load_dotenv(path)
+load_dotenv(PATH)
 
-api_key = os.getenv("OPENAI_API_KEY").strip().replace("'", "").replace('"', "")
+OPENAI_API_KEY = os.getenv("OPENAI_API_KEY").strip().replace("'", "").replace('"', "")
+client = OpenAI(api_key=OPENAI_API_KEY)
 
-client = OpenAI(api_key=api_key)
+data_manager = DataManager()
+
 
 def ai_request(system_prompt: str, user_prompt: str) -> str:
     """
@@ -38,7 +44,7 @@ def ai_request(system_prompt: str, user_prompt: str) -> str:
         max_output_tokens=300,
         temperature=0.5
     )
-
+    print(f"OpenAI response: {response.text}: ")
     return response.output_text
 
 
@@ -131,3 +137,42 @@ def user_preferences(books: list) -> dict | None:
     except Exception as e:
         print(f"OpenAI Error: {e}")
         return None
+
+def update_user_vectorstore(user_id: int):
+    user_books = data_manager.get_books_by_user(user_id)
+
+    documents = []
+    for book in user_books:
+        if book.note:
+            content_parts = [
+                f"Book: {book.reading_book.title}",
+                f"Author: {book.reading_book.author_of_book.author_name}",
+                f"My note about this book: {book.note}"
+            ]
+
+            if hasattr(book.reading_book, 'description') and book.reading_book.description:
+                content_parts.append(f"Description of this book: {book.reading_book.description}")
+
+            full_content = "\n".join(content_parts)
+
+            doc = Document(
+                page_content=full_content,
+                metadata={
+                    "book_id": book.book_id,
+                    "title": book.reading_book.title
+                }
+            )
+            documents.append(doc)
+
+    if not documents:
+        print(f"User {user_id} has books, but no notes found.")
+        return False
+
+    embeddings = OpenAIEmbeddings(api_key=OPENAI_API_KEY, model="text-embedding-3-small")
+    vectorstore = FAISS.from_documents(documents, embeddings)
+
+    user_db_path = os.path.join(BASE_DIR, "vector_dbs", f"user_{user_id}")
+
+    vectorstore.save_local(user_db_path)
+    print(f"DB for {user_id} created successfully at {user_db_path}")
+    return True

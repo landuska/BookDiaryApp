@@ -587,6 +587,12 @@ def update_book_info(book_id):
 
     try:
         data_manager.update_user_book(current_user.id, book_id, status, rating, note)
+        if note is not None:
+            try:
+                update_user_vectorstore(current_user.id)
+            except Exception as e:
+                print(f"OpenAI Error: {str(e)}")
+
         flash("Book was updated successfully")
         return redirect(url_for('user_books', username=current_user.name))
 

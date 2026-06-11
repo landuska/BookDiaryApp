@@ -554,12 +554,15 @@ def user_book_info(user_id, book_id):
     summary = None
 
     if request.method == "POST":
-        summary = get_ai_summary(
-            user_book.reading_book.title,
-            user_book.reading_book.author_of_book.author_name,
-            user_book.reading_book.description
-        ).strip()
-        return render_template('book_info.html', book=user_book, summary=summary, is_owner=is_owner)
+        if not user_book.reading_book.ai_summary:
+            summary = get_ai_summary(
+                user_book.reading_book.title,
+                user_book.reading_book.author_of_book.author_name,
+                user_book.reading_book.description
+            ).strip()
+            data_manager.set_book_ai_summary(user_book.book_id, summary)
+        else:
+            summary = user_book.reading_book.ai_summary
 
     return render_template('book_info.html', book=user_book, summary=summary, is_owner=is_owner)
 

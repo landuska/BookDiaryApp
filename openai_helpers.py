@@ -138,7 +138,19 @@ def user_preferences(books: list) -> dict | None:
         print(f"OpenAI Error: {e}")
         return None
 
-def update_user_vectorstore(user_id: int):
+def update_user_vectorstore(user_id: int) -> bool:
+    """
+    Creates or updates a FAISS vector store for a specific user based on their book notes.
+    The resulting vector store is saved under a user-specific directory.
+
+    Args:
+        user_id (int): The unique identifier of the user whose vector store
+                       should be created or updated.
+
+    Returns:
+        bool: True if the vector store was successfully created and saved,
+              False if no documents (notes) were found for the user.
+    """
     user_books = data_manager.get_books_by_user(user_id)
 
     documents = []

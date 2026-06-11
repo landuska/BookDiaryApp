@@ -115,5 +115,3 @@ def get_books_info(user_input: str) -> list[dict] | None:
 
     except requests.exceptions.RequestException:
         return None
-
-

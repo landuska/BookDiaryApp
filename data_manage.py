@@ -213,6 +213,25 @@ class DataManager:
         else:
             raise ValueError("UserBooks entry not found")
 
+    def set_book_ai_summary(self, book_id: int, summary: str) -> None:
+        """
+        Stores an AI-generated summary for a book and commits it to the database.
+
+        Args:
+            book_id: The Book to update.
+            summary (str): The AI-generated summary text to store.
+
+        Raises:
+            Exception: If a database error occurs during commit.
+        """
+        book = db.session.get(Book, book_id)
+        try:
+            book.ai_summary = summary
+            db.session.commit()
+        except Exception:
+            db.session.rollback()
+            raise
+
     def update_user_profile(self, user_id: int, profile_data: dict) -> None:
         """Updates the user's reading taste profile or creates a new one if it doesn't exist.
 

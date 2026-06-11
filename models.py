@@ -76,6 +76,7 @@ class Book(db.Model):
     book_id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
     isbn: Mapped[str] = mapped_column(String, unique=True, nullable=False)
     description: Mapped[str] = mapped_column(String, nullable=True)
+    ai_summary: Mapped[str] = mapped_column(String, nullable=True)
     title: Mapped[str] = mapped_column(String, nullable=False)
     author_id: Mapped[int] = mapped_column(Integer, ForeignKey('authors.author_id', ondelete='CASCADE'), nullable=False)
     genre: Mapped[str] = mapped_column(String, nullable=True)
@@ -98,6 +99,7 @@ class UserBooks(db.Model):
     status: Mapped[str] = mapped_column(String, nullable=True)
     rating: Mapped[float] = mapped_column(Float, nullable=True)
     note: Mapped[str] = mapped_column(String, nullable=True)
+    note_embedding: Mapped[list] = mapped_column(JSON, nullable=True)
 
     user_reader: Mapped["User"] = relationship(back_populates="list_of_reading_books")
     reading_book: Mapped["Book"] = relationship(back_populates="list_of_readers")

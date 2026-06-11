@@ -107,11 +107,15 @@ def book_public(book_id):
     summary = None
 
     if request.method == 'POST':
-        summary = get_ai_summary(
-            book.title,
-            book.author_of_book.author_name,
-            book.description
-        ).strip()
+        if not book.ai_summary:
+            summary = get_ai_summary(
+                book.title,
+                book.author_of_book.author_name,
+                book.description
+            ).strip()
+            data_manager.set_book_ai_summary(book.book_id, summary)
+        else:
+            summary = book.ai_summary
         return render_template("book_public.html", book=book, summary=summary)
 
     return render_template("book_public.html",book=book, summary=summary)

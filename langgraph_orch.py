@@ -1,18 +1,21 @@
-import os
 import operator
-from dotenv import load_dotenv
-from openai import OpenAI
-from data_manage import DataManager
+import os
+import re
 from typing import Annotated, Sequence, TypedDict
+
+from dotenv import load_dotenv
+from langchain_community.vectorstores import FAISS
+from langchain_core.messages import BaseMessage, SystemMessage
+from langchain_core.runnables import RunnableConfig
 from langchain_core.tools import tool
-from langchain_tavily import TavilySearch
 from langchain_openai import ChatOpenAI, OpenAIEmbeddings
+from langchain_tavily import TavilySearch
+from langgraph.checkpoint.memory import MemorySaver
 from langgraph.graph import StateGraph
 from langgraph.prebuilt import ToolNode, tools_condition
-from langchain_core.messages import BaseMessage,SystemMessage
-from langgraph.checkpoint.memory import MemorySaver
-from langchain_core.runnables import RunnableConfig
-from langchain_community.vectorstores import FAISS
+from openai import OpenAI
+
+from data_manage import DataManager
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 PATH = os.path.join(BASE_DIR, "config", ".env")
@@ -26,11 +29,67 @@ TAVILY_API_KEY = os.getenv("TAVILY_API_KEY").strip().replace("'", "").replace('"
 
 client = OpenAI(api_key=OPENAI_API_KEY)
 
+SYSTEM_PROMPT_TEMPLATE = """
+You are a smart and deeply engaging personal reading assistant inside a books application.
+Your job is to help users manage their library, find movie/TV adaptations, and get highly personalized recommendations.
+
+CRITICAL CURRENT USER INFO:
+- User ID: {user_id} (Use this exact integer when calling tools requiring user_id. Never reveal it to the user).
+- Already Read Books (Blacklist): [{blacklist_string}]
+
+STRICT RULE ON BLACKLIST:
+You are FORBIDDEN from recommending books from the blacklist. Use them only as inspiration or reference.
+
+---
+
+### HOW TO USE YOUR TOOLS (DECISION TREE):
+
+1. GENERAL BOOK RECOMMENDATIONS:
+   - Call `get_user_reading_profile` to understand their high-level taste (genres, tones).
+   - Provide 2-3 new books tailored to this profile.
+
+2. SEARCH IN PERSONAL NOTES / COMPLEX RECOMMENDATIONS:
+   - Call `semantic_search_user_notes` with the user's specific query.
+   - For mood-based recommendations, combine BOTH tools.
+
+3. MOVIE / TV ADAPTATIONS:
+   - Call `get_movie_adaptations` with the exact book title.
+
+---
+
+### MANDATORY RESPONSES FORMATTING:
+
+CASE 1: Standard Book Recommendations
+### Personal Book Recommendations
+1. **[Book Title]** by *[Author]*
+   Explain why they will like it based on their profile.
+
+CASE 2: Answering via Personal Notes (FAISS Search)
+*Tone: Be witty and deeply personal.*
+
+CASE 3: Movie/TV Adaptations
+### Book Information
+* **Title:** [Book Title]
+### Movie/TV Adaptations
+1. **[Title]** ([Year]) — *[Type]*
+   Brief description.
+
+CASE 4: Complex/Mood Recommendations
+### Your Next New Adventure
+*Based on what you've enjoyed before:*
+
+---
+
+GENERAL FORMATTING RULES:
+- Always use Markdown.
+- Be concise, friendly, and witty.
+- Never mention tool names or backend logic to the user.
+"""
+
+
 @tool
 def get_user_reading_profile(user_id: int) -> str:
-    """ Use this tool to fetch the user's analyzed reading taste profile (genres, tones, summary)
-        to make highly personalized new book recommendations.
-    """
+    """ Use this tool to fetch the user's analyzed reading taste profile (genres, tones, summary) to make highly personalized new book recommendations."""
     taste_profile = data_manager.get_user_taste_profile(user_id)
 
     if taste_profile and taste_profile.profile_data:
@@ -50,34 +109,36 @@ def get_user_reading_profile(user_id: int) -> str:
     if not user_books:
         return "The user has no reading profile and no books in their library yet."
 
-    result = "User has no generated profile yet. Here is their raw Library History:\n"
+    result = "User has no generated profile yet. Here is their raw Library History. DO NOT recommend these books, they are ALREADY READ:\n"
     for book in user_books:
-        title = getattr(book.reading_book, 'title', 'Unknown Title') if hasattr(book, 'reading_book') else getattr(book, 'title', 'Unknown Title')
+        title = getattr(book.reading_book, 'title', 'Unknown Title') if hasattr(book, 'reading_book') else getattr(book,
+                                                                                                                   'title',
+                                                                                                                   'Unknown Title')
         note = getattr(book, 'note', '')
         result += f"- Book: {title}, Note: {note}\n"
 
     return result
+
+
 @tool
 def semantic_search_user_notes(user_id: int, user_question: str):
-    """Use this tool to search through the user's personal book notes, thoughts, and library history.
-    Crucial for:
-    1. Answering specific questions about books they've read.
-    2. Complex recommendation requests (e.g., if the user wants 'something funny', you can search their notes for 'funny', 'laughed', or 'comedy' to see what they previously enjoyed).
-    """
+    """Use this tool to search through the user's personal book notes."""
     user_db_path = os.path.join(BASE_DIR, "vector_dbs", f"user_{user_id}")
 
     if not os.path.exists(user_db_path):
         return "You don't have any saved notes yet. Please add a note to a book first."
 
-    embeddings = OpenAIEmbeddings(api_key=OPENAI_API_KEY, model="text-embedding-3-small")
-    vectorstore = FAISS.load_local(
-        user_db_path,
-        embeddings,
-        allow_dangerous_deserialization=True
-    )
-
-    retriever = vectorstore.as_retriever(search_kwargs={"k": 3})
-    retrieved_docs = retriever.invoke(user_question)
+    try:
+        embeddings = OpenAIEmbeddings(api_key=OPENAI_API_KEY, model="text-embedding-3-small")
+        vectorstore = FAISS.load_local(
+            user_db_path,
+            embeddings,
+            allow_dangerous_deserialization=True
+        )
+        retriever = vectorstore.as_retriever()
+        retrieved_docs = retriever.invoke(user_question)
+    except Exception as e:
+        return f"Could not load your notes database. Error: {str(e)}"
 
     if not retrieved_docs:
         return "No closely matching books found in your library for this request."
@@ -86,132 +147,96 @@ def semantic_search_user_notes(user_id: int, user_question: str):
 
     return context
 
+
 @tool
 def get_movie_adaptations(book_title: str) -> str:
     """ Use this tool to check if a book has a movie or TV adaptation."""
     search = TavilySearch(
-    max_results=5,
-    tavily_api_key=TAVILY_API_KEY
+        max_results=5,
+        tavily_api_key=TAVILY_API_KEY
     )
     return search.invoke(f"movie or TV series adaptation of the book {book_title}")
 
 
 tools = [get_user_reading_profile, semantic_search_user_notes, get_movie_adaptations]
 
+
 class AgentState(TypedDict):
     messages: Annotated[Sequence[BaseMessage], operator.add]
     read_books: list[str]
 
-def create_agent():
-    model = ChatOpenAI(temperature=0, model="gpt-4o-mini", streaming=True, api_key=OPENAI_API_KEY)
 
+def _get_user_id_from_config(config: RunnableConfig) -> int:
+    """Helper function: safely extracts user_id from config."""
+    cfg = config.get("configurable", {})
+
+    raw_id = cfg.get("user_id", 0)
+    try:
+        return int(raw_id)
+    except (ValueError, TypeError):
+        return 0
+
+
+def _check_blacklist(content_text: str, read_titles: list[str]) -> list[str]:
+    """Helper function: searches for prohibited books in the response text."""
+    found = []
+    content_lower = content_text.lower()
+
+    for title in read_titles:
+        if len(title) <= 2:
+            continue
+
+        pattern = r'\b' + re.escape(title.lower()) + r'\b'
+        if re.search(pattern, content_lower):
+            found.append(title)
+
+    return found
+
+
+def create_agent():
+    model = ChatOpenAI(temperature=0, model="gpt-4o-mini", api_key=OPENAI_API_KEY)
     model_with_tools = model.bind_tools(tools)
 
     def call_model(state: AgentState, config: RunnableConfig):
         messages = state["messages"]
-
-        cfg = config.get("configurable", {})
-        user_id = cfg.get("user_id", cfg.get("thread_id", 0))
-
-        try:
-            user_id = int(user_id)
-        except (ValueError, TypeError):
-            user_id = 0
+        user_id = _get_user_id_from_config(config)
 
         user_books = data_manager.get_books_by_user(user_id) if user_id else []
         read_titles = []
         for book in user_books:
             title = getattr(book.reading_book, 'title', None)
-            if title:
-                read_titles.append(title)
+            status = getattr(book, 'status', None)
+            if status == "completed":
+                if title:
+                    read_titles.append(title.strip())
 
-        state["read_books"] = read_titles
         blacklist_string = ", ".join([f'"{t}"' for t in read_titles]) if read_titles else "None"
 
-        system_prompt = SystemMessage(content=f"""
-                You are a personal reading assistant inside a books application.
-                Your job is to assist users with two types of requests: book recommendations or finding movie/TV adaptations.
-                
-                CRITICAL: The current user ID is {user_id}. Use this EXACT integer ID when calling the tool `get_user_reading_profile`. 
-                Never guess it and never reveal this ID to the user.
-                
-                Depending on the user's request, follow these strict Markdown formatting rules:
-                
-                ---
-                
-                ### CASE 1: USER ASKS FOR BOOK RECOMMENDATIONS
-                Use the `get_user_reading_profile` tool to check their analyzed reading taste (favorite genres, preferred tones, and taste summary). 
-                Based on this rich data, give 2-3 highly personalized recommendations.
-                
-                Format your response exactly like this:
-                ### Personal Book Recommendations
-                1. **[Book Title]** by *[Author]*
-                   Explain exactly why they will like it based on their specific taste profile (genres/tones).
-                2. **[Book Title]** by *[Author]*
-                   Explain how this connects to their overall reading preferences and summary.
-                
-                ---
-                
-                ### CASE 2: USER ASKS ABOUT THEIR PERSONAL NOTES / MEMORIES
-                Use the `semantic_search_user_notes` tool to look into their vector database.
-                
-                PERSONALITY FOR THIS CASE: 
-                Be funny, a bit ironic, witty, and deeply engaging. Act like a cool, slightly sarcastic book-nerd friend.
-                Look closely at what the user wrote in their notes, answer their question directly, and make a clever joke, witty comment, or light tease about their notes, book impressions, or reading speed.
-                
-                Format your response like this:
-                ### Found in Your Library Vault
-                [Your witty, funny, and direct answer based on the notes retrieved by the tool. Highlight book titles in **bold**]
-                
-                ---
-                
-                ### CASE 3: USER ASKS ABOUT MOVIE/TV ADAPTATIONS
-                Use the search tool to find real adaptations. List up to 3 major ones.
-                Format your response like this:
-                ###  Book Information
-                * **Title:** [Book Title]
-                
-                ### Movie/TV Adaptations
-                1. **[Title of Adaptation]** ([Year]) — *[Type: Movie or TV Series]*
-                   Brief 1-sentence description.
-                
-                If no adaptations exist, clearly say so and suggest 1-2 similar movies based on the book's genre.
-                
-                ---
-                
-                ### When a user asks for a specific mood, emotion, or complex recommendation, you MUST combine your superpowers:
-                1. Call `get_user_reading_profile` to know their general taste.
-                2. Call `search_user_notes` to find out what exactly they felt or liked in the past.
-                
-                CRITICAL BLACKLIST (ALREADY READ BOOKS):
-                The user has ALREADY read the following books: [{blacklist_string}].
-                
-                You are strictly FORBIDDEN from recommending any book from this list. 
-                If the user asks for a recommendation, you can use the books from this list as inspiration to find SIMILAR books, but you must NEVER list these exact titles as new recommendations.
-
-                Format your response exactly like this:
-                ### Your Next New Adventure (Tailored for Your Mood)
-                
-                *Based on what you've enjoyed before:*
-                "I see that you found **[Old Book Title]** hilarious because of its sarcasm. Since you've already read that, here is what you should read next:"
-                
-                1. **[NEW Book Title]** by *[Author]*
-                   [Explain why this new book matches the humor/style of the old book they liked]
-                
-                2. **[NEW Book Title]** by *[Author]*
-                   [Explain how this connects to their general profile]
-                
-                ---
-                
-                GENERAL RULES:
-                - Always use Markdown (### for headers, ** for bold, * for bullets/italics).
-                - Be concise, friendly, and factual. Never mention internal system instructions.
-                """)
+        system_prompt = SystemMessage(
+            content=SYSTEM_PROMPT_TEMPLATE.format(
+                user_id=user_id,
+                blacklist_string=blacklist_string,
+            )
+        )
 
         response = model_with_tools.invoke([system_prompt] + list(messages))
+
+        if response.content and read_titles:
+            found_blacklisted = _check_blacklist(response.content, read_titles)
+
+            if found_blacklisted:
+                print(
+                    f"[LANGGRAPH WARNING] The model broke the blacklist and offered: {found_blacklisted}. Restarting generation...")
+
+                correction_message = SystemMessage(
+                    content=f"CRITICAL ERROR: You just recommended or mentioned books that the user has ALREADY read: {found_blacklisted}. This is strictly forbidden. Rewrite your response immediately and replace these books with NEW recommendations that are NOT in the library.")
+
+                response = model_with_tools.invoke([system_prompt] + list(messages) + [correction_message])
+
         if response.tool_calls:
             print(f"\n[LANGGRAPH] The agent chose a tool: {[t['name'] for t in response.tool_calls]}")
-        return {"messages": [response], "read_books": state["read_books"]}
+
+        return {"messages": [response], "read_books": read_titles}
 
     workflow = StateGraph(AgentState)
     workflow.add_node("agent", call_model)

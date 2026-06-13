@@ -207,7 +207,8 @@
 
                             <label for="edit-note"
                                    class="display-area d-block">
-                                <div class="notes-box p-3 rounded">{% if book.note and book.note.strip() %}{{ book.note }}
+                                <div class="notes-box p-3 rounded">{% if book.note and book.note.strip() %}{{ book.note
+                                    }}
                                     {% else %}
                                     <span class="text-muted">No notes yet.</span>
                                     {% endif %}
@@ -223,7 +224,7 @@
                                       style="border: 1px solid var(--geo-pastel);">{{ book.note or '' }}</textarea>
                             </div>
                             {% endif %}
-                            </div>
+                        </div>
 
                     </div>
 
@@ -264,7 +265,7 @@
                  style="background: var(--geo-dark-blue);
                         color: white;">
 
-                <h5 class="fw-bold"> <i data-lucide="sparkles"></i> AI Book Summary</h5>
+                <h5 class="fw-bold"><i data-lucide="sparkles"></i> AI Book Summary</h5>
 
                 <button class="btn-close btn-close-white"
                         data-bs-dismiss="modal"></button>
@@ -287,7 +288,8 @@
                 <div class="p-3"
                      style="background: #f8f9fa;
                             border-radius: 12px;
-                            white-space: pre-wrap;">{{ summary }}</div>
+                            white-space: pre-wrap;">{{ summary }}
+                </div>
 
             </div>
 

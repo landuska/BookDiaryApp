@@ -1,14 +1,16 @@
+from datetime import date
+from typing import List, Optional
+
+from flask_login import UserMixin
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy import Date, Integer, String, Float, ForeignKey, JSON
 from sqlalchemy.orm import Mapped, mapped_column, relationship, validates
-from datetime import date
-from typing import List, Optional
-from flask_login import UserMixin
 from werkzeug.security import generate_password_hash, check_password_hash
 
 db = SQLAlchemy()
 
-class User(db.Model,UserMixin):
+
+class User(db.Model, UserMixin):
     """Represents a system user for authentication and library management."""
 
     __tablename__ = 'users'
@@ -17,15 +19,17 @@ class User(db.Model,UserMixin):
     name: Mapped[str] = mapped_column(String, unique=True, nullable=False)
     password_hash: Mapped[str] = mapped_column(String, nullable=False)
 
-    list_of_reading_books: Mapped[List["UserBooks"]] = relationship(back_populates="user_reader", cascade="all, delete-orphan",
-        passive_deletes=True)
-    list_of_communities_of_user: Mapped[List["UserCommunities"]] = relationship(back_populates="user_member", cascade="all, delete-orphan",
-        passive_deletes=True)
-    taste_profile: Mapped["UserTasteProfile"] = relationship(back_populates="user",uselist=False,
-        cascade="all, delete-orphan"
-    )
+    list_of_reading_books: Mapped[List["UserBooks"]] = relationship(back_populates="user_reader",
+                                                                    cascade="all, delete-orphan",
+                                                                    passive_deletes=True)
+    list_of_communities_of_user: Mapped[List["UserCommunities"]] = relationship(back_populates="user_member",
+                                                                                cascade="all, delete-orphan",
+                                                                                passive_deletes=True)
+    taste_profile: Mapped["UserTasteProfile"] = relationship(back_populates="user", uselist=False,
+                                                             cascade="all, delete-orphan"
+                                                             )
 
-    def set_password(self, password: str)-> None:
+    def set_password(self, password: str) -> None:
         """Hashes the password and stores it in the database.
 
         Args:
@@ -33,7 +37,7 @@ class User(db.Model,UserMixin):
         """
         self.password_hash = generate_password_hash(password)
 
-    def check_password(self, password: str)-> bool:
+    def check_password(self, password: str) -> bool:
         """Verifies the plain-text password against the stored hash.
 
         Args:
@@ -64,7 +68,7 @@ class User(db.Model,UserMixin):
             raise ValueError("Username must be at least 3 characters long.")
         return value.strip()
 
-    def __repr__(self)-> str:
+    def __repr__(self) -> str:
         return f"User (id={self.id}, name={self.name})"
 
 
@@ -82,10 +86,11 @@ class Book(db.Model):
     genre: Mapped[str] = mapped_column(String, nullable=True)
     cover_url: Mapped[str] = mapped_column(String, nullable=True)
 
-    list_of_readers: Mapped[List["UserBooks"]] = relationship(back_populates="reading_book", cascade="all, delete-orphan", passive_deletes=True)
+    list_of_readers: Mapped[List["UserBooks"]] = relationship(back_populates="reading_book",
+                                                              cascade="all, delete-orphan", passive_deletes=True)
     author_of_book: Mapped["Author"] = relationship(back_populates="books")
 
-    def __repr__(self)-> str:
+    def __repr__(self) -> str:
         return f"Book (id={self.book_id}, title={self.title})"
 
 
@@ -99,7 +104,6 @@ class UserBooks(db.Model):
     status: Mapped[str] = mapped_column(String, nullable=True)
     rating: Mapped[float] = mapped_column(Float, nullable=True)
     note: Mapped[str] = mapped_column(String, nullable=True)
-    note_embedding: Mapped[list] = mapped_column(JSON, nullable=True)
 
     user_reader: Mapped["User"] = relationship(back_populates="list_of_reading_books")
     reading_book: Mapped["Book"] = relationship(back_populates="list_of_readers")
@@ -153,7 +157,7 @@ class UserBooks(db.Model):
         """
         return value.strip() if value else value
 
-    def __repr__(self)-> str:
+    def __repr__(self) -> str:
         return f"UserBooks (user_id={self.user_id}, book_id={self.book_id})"
 
 
@@ -167,9 +171,10 @@ class Author(db.Model):
     birth_date: Mapped[date] = mapped_column(Date, nullable=True)
     death_date: Mapped[date] = mapped_column(Date, nullable=True)
 
-    books: Mapped[List["Book"]] = relationship(back_populates="author_of_book",cascade="all, delete-orphan",passive_deletes=True)
+    books: Mapped[List["Book"]] = relationship(back_populates="author_of_book", cascade="all, delete-orphan",
+                                               passive_deletes=True)
 
-    def __repr__(self)-> str:
+    def __repr__(self) -> str:
         return f"Author (id={self.author_id}, name={self.author_name})"
 
 
@@ -182,8 +187,9 @@ class Community(db.Model):
     community_name: Mapped[str] = mapped_column(String, unique=True, nullable=False)
     about_community: Mapped[str] = mapped_column(String, nullable=True)
 
-    list_of_members: Mapped[List["UserCommunities"]] = relationship(back_populates="user_community", cascade="all, delete-orphan",
-        passive_deletes=True)
+    list_of_members: Mapped[List["UserCommunities"]] = relationship(back_populates="user_community",
+                                                                    cascade="all, delete-orphan",
+                                                                    passive_deletes=True)
 
     @validates('community_name')
     def validate_community_name(self, key: str, value: str) -> str:
@@ -213,7 +219,7 @@ class Community(db.Model):
         """
         return value.strip() if value else value
 
-    def __repr__(self)-> str:
+    def __repr__(self) -> str:
         return f"Community (id={self.community_id}, name={self.community_name})"
 
 
@@ -223,13 +229,15 @@ class UserCommunities(db.Model):
     __tablename__ = 'user_communities'
 
     user_id: Mapped[int] = mapped_column(Integer, ForeignKey('users.id', ondelete='CASCADE'), primary_key=True)
-    community_id: Mapped[int] = mapped_column(Integer, ForeignKey('communities.community_id', ondelete='CASCADE'), primary_key=True)
+    community_id: Mapped[int] = mapped_column(Integer, ForeignKey('communities.community_id', ondelete='CASCADE'),
+                                              primary_key=True)
 
     user_member: Mapped["User"] = relationship(back_populates="list_of_communities_of_user")
     user_community: Mapped["Community"] = relationship(back_populates="list_of_members")
 
-    def __repr__(self)-> str:
+    def __repr__(self) -> str:
         return f"UserCommunities (user_id={self.user_id}, community_id={self.community_id})"
+
 
 class UserTasteProfile(db.Model):
     """Represents a user's reading taste profile."""
@@ -241,5 +249,5 @@ class UserTasteProfile(db.Model):
     update_at: Mapped[date] = mapped_column(Date, nullable=True)
     user: Mapped["User"] = relationship(back_populates="taste_profile")
 
-    def __repr__(self)-> str:
+    def __repr__(self) -> str:
         return f"UserTasteProfile (user_id={self.user_id}, profile_data={self.profile_data})"

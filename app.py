@@ -13,17 +13,18 @@ The application uses Flask, SQLAlchemy, Flask-Login,
 OpenAI services, PostgreSQL and Langgraph.
 """
 
-from flask import Flask, render_template, request, redirect,  url_for, flash, jsonify
-from flask_login import LoginManager, login_user, logout_user, login_required, current_user
-from sqlalchemy.exc import SQLAlchemyError
-from langchain_core.messages import HumanMessage
-from models import *
-from data_manage import DataManager
-from helpers import *
-from openai_helpers import *
-from langgraph_orch import create_agent
 import os
+
 from dotenv import load_dotenv
+from flask import Flask, render_template, request, redirect, url_for, flash, jsonify
+from flask_login import LoginManager, login_user, logout_user, login_required, current_user
+from langchain_core.messages import HumanMessage
+from sqlalchemy.exc import SQLAlchemyError
+
+from helpers import *
+from langgraph_orch import create_agent
+from models import *
+from openai_helpers import *
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 path = os.path.join(BASE_DIR, "config", ".env")
@@ -48,6 +49,7 @@ except Exception as e:
 with app.app_context():
     db.create_all()
     data_manager = DataManager()
+
 
 # ***********************************************
 # ******** THE USER IS NOT LOGGED IN *********
@@ -87,7 +89,7 @@ def all_books():
         for book in books:
             genres.add(book.genre)
     list_of_genres = sorted(list(genres))
-    return render_template('books.html', books=filtered_books,genres=list_of_genres, selected_genre=genre)
+    return render_template('books.html', books=filtered_books, genres=list_of_genres, selected_genre=genre)
 
 
 @app.route('/books/<int:book_id>', methods=['GET', 'POST'])
@@ -118,7 +120,7 @@ def book_public(book_id):
             summary = book.ai_summary
         return render_template("book_public.html", book=book, summary=summary)
 
-    return render_template("book_public.html",book=book, summary=summary)
+    return render_template("book_public.html", book=book, summary=summary)
 
 
 # *************** AUTHORS *************
@@ -192,7 +194,7 @@ def community_info(community_id):
                 is_member = True
                 break
 
-    return render_template('community_info.html', community=community,members=members,is_member=is_member)
+    return render_template('community_info.html', community=community, members=members, is_member=is_member)
 
 
 # ***********************************************
@@ -338,6 +340,7 @@ def logout(username):
     logout_user()
     return redirect(url_for('index'))
 
+
 @app.route('/<username>/delete', methods=['POST'])
 @login_required
 def delete_user(username):
@@ -429,7 +432,8 @@ def user_books(username):
     genres = data_manager.get_user_genres(current_user.id)
 
     is_owner = (current_user.id == user.id)
-    return render_template('user_books.html', user=user, books=all_user_books,genres=genres, current_status=status,current_rating=rating,current_genre=genre,is_owner=is_owner)
+    return render_template('user_books.html', user=user, books=all_user_books, genres=genres, current_status=status,
+                           current_rating=rating, current_genre=genre, is_owner=is_owner)
 
 
 @app.route('/<username>/add_book', methods=['GET', 'POST'])
@@ -491,7 +495,6 @@ def confirm_add_book(username):
         api_book_name_of_author = request.form.get('author')
         api_book_genre = request.form.get('genre', '')
         api_book_cover_url = request.form.get('cover_url', '')
-
 
         book_obj = data_manager.get_entity_by_multiple_fields(Book, isbn=api_book_isbn)
 
@@ -559,8 +562,10 @@ def user_book_info(user_id, book_id):
                 user_book.reading_book.title,
                 user_book.reading_book.author_of_book.author_name,
                 user_book.reading_book.description
-            ).strip()
-            data_manager.set_book_ai_summary(user_book.book_id, summary)
+            )
+            if summary:
+                summary = summary.strip()
+                data_manager.set_book_ai_summary(user_book.book_id, summary)
         else:
             summary = user_book.reading_book.ai_summary
 
@@ -732,7 +737,6 @@ def create_community():
         return redirect(url_for('create_community'))
 
 
-
 @app.route('/communities/<int:community_id>/update', methods=['POST'])
 @login_required
 def update_community(community_id):
@@ -888,6 +892,7 @@ def delete_community(community_id: int):
 
     return redirect(url_for('user_communities', username=current_user.name))
 
+
 # *********************************************
 # **************** AI AGENT *******************
 # *********************************************
@@ -945,6 +950,7 @@ def page_not_found(error):
 def server_error(error):
     """Custom error handler for 500 (Internal Server Error) errors."""
     return render_template("500.html"), 500
+
 
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=5000, debug=True)

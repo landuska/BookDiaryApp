@@ -198,45 +198,32 @@
             {% endfor %}
 
             {% else %}
-            <div class="col-12">
-                <div class="py-5 px-4 text-center"
-                     style="border-radius: 25px; background: #ffffff; border: 2px dashed var(--geo-pastel);">
-                    <div class="geo-icon mb-3" style="opacity: 0.3;">
-                                <i data-lucide="book-open-text"></i>
-                            </div>
-                    <h3 class="fw-bold" style="color: var(--geo-dark-blue);">
-                        Your library is empty
-                    </h3>
-                    <p class="text-muted mb-4">
-                        You haven't added any books yet.
-                    </p>
 
-                    <a href="{{ url_for('add_book', username=current_user.name) }}"
-                       class="btn btn-geo-primary px-4 py-2">
-                        Add First Book
-                    </a>
-                </div>
-            </div>
-            {% endif %}
+            <h3 class="fw-bold" style="color: var(--geo-dark-blue);">
+                There are no books in this category.
+            </h3>
+
         </div>
+        {% endif %}
     </div>
+</div>
 
-    <style>
-        .transition-card {
-            transition: all 0.3s ease;
-        }
+<style>
+    .transition-card {
+        transition: all 0.3s ease;
+    }
 
-        .transition-card:hover {
-            transform: translateY(-8px);
-            box-shadow: 0 1rem 2rem rgba(12, 87, 132, 0.12) !important;
-        }
+    .transition-card:hover {
+        transform: translateY(-8px);
+        box-shadow: 0 1rem 2rem rgba(12, 87, 132, 0.12) !important;
+    }
 
-        .text-truncate {
-            display: block;
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-        }
-    </style>
+    .text-truncate {
+        display: block;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+</style>
 
-    {% endblock %}
+{% endblock %}

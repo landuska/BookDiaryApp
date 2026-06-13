@@ -1,11 +1,13 @@
-import os
-from dotenv import load_dotenv
-from openai import OpenAI
 import json
-from data_manage import DataManager
+import os
+
+from dotenv import load_dotenv
 from langchain_community.vectorstores import FAISS
-from langchain_openai import OpenAIEmbeddings
 from langchain_core.documents import Document
+from langchain_openai import OpenAIEmbeddings
+from openai import OpenAI
+
+from data_manage import DataManager
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 PATH = os.path.join(BASE_DIR, "config", ".env")
@@ -41,7 +43,7 @@ def ai_request(system_prompt: str, user_prompt: str) -> str:
                 "content": user_prompt
             }
         ],
-        max_output_tokens=300,
+        max_output_tokens=500,
         temperature=0.5
     )
     print(f"OpenAI response: {response.text}: ")
@@ -52,7 +54,7 @@ def get_ai_summary(title: str, author: str, description: str) -> str | None:
     """
     Generates a summary for a specific book.
     The summary highlights the main idea, key themes, and target audience
-    in a maximum of 3-4 sentences without any markdown formatting.
+    in a maximum of 3-4 sentences without any Markdown formatting.
 
     Args:
         title (str): The title of the book.
@@ -67,7 +69,7 @@ def get_ai_summary(title: str, author: str, description: str) -> str | None:
         Your goal is to get a summary about books simply and clearly.
         """
 
-    user_prompt = """
+    user_prompt = f"""
         Write a short summary for the book {title} by {author} based on the {description}
         Highlight the main idea, key themes, and explain who would benefit from reading this book.
         Make the response structured, clear, not complicated, in max 3-4 sentences.
@@ -75,11 +77,9 @@ def get_ai_summary(title: str, author: str, description: str) -> str | None:
         Do not use markdown formatting like '**' or '#', write as plain text with paragraphs.
         """
 
-    final_user_prompt = user_prompt.format(title=title, author=author, description=description)
-
     try:
-        response = ai_request(system_prompt, final_user_prompt)
-        return response.strip()
+        response = ai_request(system_prompt, user_prompt)
+        return response
 
     except Exception as e:
         print(f"OpenAI Error in get_ai_summary: {e}")
@@ -111,12 +111,14 @@ def user_preferences(books: list) -> dict | None:
         
         Your response must be valid JSON only. Do not include markdown or text outside the JSON.
         """
+
+    recent_books = books[-30:] if len(books) > 30 else books
     books_input = []
-    for b in books:
+    for book in recent_books:
         books_input.append({
-            "title": getattr(b, 'title', ''),
-            "rating": getattr(b, 'rating', 'None'),
-            "note": getattr(b, 'note', '')
+            "title": getattr(book.reading_book, 'title', ''),
+            "rating": getattr(book, 'rating', 'None'),
+            "note": getattr(book, 'note', '')
         })
 
     user_prompt = f"""
@@ -131,12 +133,12 @@ def user_preferences(books: list) -> dict | None:
 
     try:
         response = ai_request(system_prompt, user_prompt)
-        cleaned_response = response.strip().strip("`").replace("json\n", "", 1)
-        return json.loads(cleaned_response)
+        return json.loads(response)
 
     except Exception as e:
         print(f"OpenAI Error: {e}")
         return None
+
 
 def update_user_vectorstore(user_id: int) -> bool:
     """

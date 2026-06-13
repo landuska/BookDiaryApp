@@ -1,9 +1,11 @@
-import requests
 import os
+
+import requests
 from dotenv import load_dotenv
 
 load_dotenv(dotenv_path="config/.env")
 API_KEY = os.getenv('API_KEY')
+
 
 def is_valid_book(info: dict) -> bool:
     """
@@ -21,7 +23,7 @@ def is_valid_book(info: dict) -> bool:
     """
 
     title = info.get("title", "").lower()
-    categories = " ".join(info.get("categories", [])).lower()
+    categories = " ".join(info.get("categories") or []).lower()
 
     banned = ["magazine", "journal", "newsletter", "gazette", "reference", "annotation", "periodical"]
 
@@ -75,7 +77,7 @@ def get_books_info(user_input: str) -> list[dict] | None:
 
         books = []
 
-        for item in items[:5]:
+        for item in items:
             isbn = ""
             author = ""
             genre = ""
@@ -113,5 +115,6 @@ def get_books_info(user_input: str) -> list[dict] | None:
 
         return books
 
-    except requests.exceptions.RequestException:
+    except requests.exceptions.RequestException as e:
+        print(f"API error: {e}")
         return None

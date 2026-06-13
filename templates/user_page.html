@@ -31,52 +31,62 @@
 
                     <div class="taste-profile-container text-start mx-auto" style="max-width: 550px;">
                         {% if current_user.taste_profile and current_user.taste_profile.profile_data %}
-                            <div class="d-flex justify-content-between align-items-center mb-3">
-                                <h5 class="fw-bold m-0 d-flex align-items-center gap-2">
-                                    <i data-lucide="sparkles" class="text-warning"></i> Reading Taste Profile
-                                </h5>
-                                <span class="text-muted" style="font-size: 0.8rem;">
+                        <div class="d-flex justify-content-between align-items-center mb-3">
+                            <h5 class="fw-bold m-0 d-flex align-items-center gap-2">
+                                <i data-lucide="sparkles" class="text-warning"></i> Reading Taste Profile
+                            </h5>
+                            <span class="text-muted" style="font-size: 0.8rem;">
                                     Updated: {{ current_user.taste_profile.update_at.strftime('%d.%m.%Y') }}
                                 </span>
-                            </div>
+                        </div>
 
-                            <div class="mb-3">
-                                {% for genre in current_user.taste_profile.profile_data.genres %}
-                                    <span class="badge bg-light text-dark border me-1 mb-1" style="border-radius: 20px; padding: 6px 12px;">
+                        <div class="mb-3">
+                            {% for genre in current_user.taste_profile.profile_data.genres %}
+                            <span class="badge bg-light text-dark border me-1 mb-1"
+                                  style="border-radius: 20px; padding: 6px 12px;">
                                         {{ genre }}
                                     </span>
-                                {% endfor %}
-                            </div>
+                            {% endfor %}
+                        </div>
 
-                            <p class="mb-3 text-muted small">
-                                <strong>Tone & Style:</strong> {{ current_user.taste_profile.profile_data.tones | join(', ') }}
-                            </p>
+                        <p class="mb-3 text-muted small">
+                            <strong>Tone & Style:</strong> {{ current_user.taste_profile.profile_data.tones | join(', ')
+                            }}
+                        </p>
 
-                            <blockquote class="bg-light p-3 rounded-3 border-start border-3 border-primary mb-4" style="font-style: italic; font-size: 0.95rem;">
-                                "{{ current_user.taste_profile.profile_data.summary }}"
-                            </blockquote>
+                        <blockquote class="bg-light p-3 rounded-3 border-start border-3 border-primary mb-4"
+                                    style="font-style: italic; font-size: 0.95rem;">
+                            "{{ current_user.taste_profile.profile_data.summary }}"
+                        </blockquote>
 
-                            <div class="text-center">
-                                <form action="{{ url_for('generate_taste_profile', username=current_user.name) }}" method="POST" class="taste-profile-form">
-                                    <button type="submit" class="btn btn-geo-primary btn-sm px-4 submit-btn" style="border-radius: 20px;">
-                                        <span class="btn-text">Recalculate My Taste</span>
-                                        <span class="spinner-border spinner-border-sm d-none btn-spinner" role="status" aria-hidden="true"></span>
-                                    </button>
-                                </form>
-                            </div>
+                        <div class="text-center">
+                            <form action="{{ url_for('generate_taste_profile', username=current_user.name) }}"
+                                  method="POST" class="taste-profile-form">
+                                <button type="submit" class="btn btn-geo-primary btn-sm px-4 submit-btn"
+                                        style="border-radius: 20px;">
+                                    <span class="btn-text">Recalculate My Taste</span>
+                                    <span class="spinner-border spinner-border-sm d-none btn-spinner" role="status"
+                                          aria-hidden="true"></span>
+                                </button>
+                            </form>
+                        </div>
 
                         {% else %}
-                            <div class="text-center py-3">
-                                <h5 class="fw-bold mb-2">Discover Your Reading Taste</h5>
-                                <p class="text-muted small mb-3">Let AI analyze your personal library and reading notes to build your unique profile.</p>
+                        <div class="text-center py-3">
+                            <h5 class="fw-bold mb-2">Discover Your Reading Taste</h5>
+                            <p class="text-muted small mb-3">Let AI analyze your personal library and reading notes to
+                                build your unique profile.</p>
 
-                                <form action="{{ url_for('generate_taste_profile', username=current_user.name) }}" method="POST" class="taste-profile-form">
-                                    <button type="submit" class="btn btn-geo-primary px-4 submit-btn" style="border-radius: 20px;">
-                                        <span class="btn-text"><i data-lucide="sparkles"></i> Generate Taste Profile</span>
-                                        <span class="spinner-border spinner-border-sm d-none btn-spinner" role="status" aria-hidden="true"></span>
-                                    </button>
-                                </form>
-                            </div>
+                            <form action="{{ url_for('generate_taste_profile', username=current_user.name) }}"
+                                  method="POST" class="taste-profile-form">
+                                <button type="submit" class="btn btn-geo-primary px-4 submit-btn"
+                                        style="border-radius: 20px;">
+                                    <span class="btn-text"><i data-lucide="sparkles"></i> Generate Taste Profile</span>
+                                    <span class="spinner-border spinner-border-sm d-none btn-spinner" role="status"
+                                          aria-hidden="true"></span>
+                                </button>
+                            </form>
+                        </div>
                         {% endif %}
                     </div>
 
@@ -92,7 +102,8 @@
                             <div class="geo-icon"><i data-lucide="book-open-text"></i></div>
                             <h5 class="card-title fw-bold">Books</h5>
                             <p class="card-text small text-muted">Your personal library</p>
-                            <a href="{{ url_for('user_books', username=current_user.name) }}" class="btn btn-geo-primary stretched-link">View</a>
+                            <a href="{{ url_for('user_books', username=current_user.name) }}"
+                               class="btn btn-geo-primary stretched-link">View</a>
                         </div>
                     </div>
                 </div>
@@ -103,7 +114,8 @@
                             <div class="geo-icon"><i data-lucide="square-pen"></i></div>
                             <h5 class="card-title fw-bold">Authors</h5>
                             <p class="card-text small text-muted">Favorite writers and bio</p>
-                            <a href="{{ url_for('user_authors', username=current_user.name) }}" class="btn btn-geo-primary stretched-link">View</a>
+                            <a href="{{ url_for('user_authors', username=current_user.name) }}"
+                               class="btn btn-geo-primary stretched-link">View</a>
                         </div>
                     </div>
                 </div>
@@ -114,7 +126,8 @@
                             <div class="geo-icon"><i data-lucide="users"></i></div>
                             <h5 class="card-title fw-bold">Clubs</h5>
                             <p class="card-text small text-muted">Your active communities</p>
-                            <a href="{{ url_for('user_communities', username=current_user.name) }}" class="btn btn-geo-primary stretched-link">View</a>
+                            <a href="{{ url_for('user_communities', username=current_user.name) }}"
+                               class="btn btn-geo-primary stretched-link">View</a>
                         </div>
                     </div>
                 </div>
@@ -144,7 +157,8 @@
                             Delete everything
                         </button>
                     </form>
-                    <button type="button" class="btn btn-light w-100" data-bs-dismiss="modal" style="border-radius: 8px;">
+                    <button type="button" class="btn btn-light w-100" data-bs-dismiss="modal"
+                            style="border-radius: 8px;">
                         Cancel
                     </button>
                 </div>
@@ -154,17 +168,17 @@
 </div>
 
 <script>
-document.querySelectorAll('.taste-profile-form').forEach(form => {
-    form.addEventListener('submit', function() {
-        const btn = this.querySelector('.submit-btn');
-        const text = this.querySelector('.btn-text');
-        const spinner = this.querySelector('.btn-spinner');
+    document.querySelectorAll('.taste-profile-form').forEach(form => {
+        form.addEventListener('submit', function() {
+            const btn = this.querySelector('.submit-btn');
+            const text = this.querySelector('.btn-text');
+            const spinner = this.querySelector('.btn-spinner');
 
-        btn.disabled = true;
-        text.textContent = 'Analyzing your reading taste... ';
-        spinner.classList.remove('d-none');
+            btn.disabled = true;
+            text.textContent = 'Analyzing your reading taste... ';
+            spinner.classList.remove('d-none');
+        });
     });
-});
 </script>
 
 <style>

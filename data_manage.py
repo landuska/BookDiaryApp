@@ -276,7 +276,6 @@ class DataManager:
         taste_profile = db.session.get(UserTasteProfile, user_id)
         return taste_profile
 
-
     # *********************** AUTHOR ***************************
 
     def add_author(self, name: str, birth_date: date = None, death_date: date = None) -> None:

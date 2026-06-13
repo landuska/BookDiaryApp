@@ -60,19 +60,19 @@
 
                 <div class="border-top pt-3 mt-3">
 
-                <form method="POST" id="ai-summary-form">
-                    <button type="submit"
-                            id="ai-summary-btn"
-                            class="btn w-100 mb-2 fw-bold d-flex align-items-center justify-content-center gap-2"
-                            style="border-radius: 12px;
+                    <form method="POST" id="ai-summary-form">
+                        <button type="submit"
+                                id="ai-summary-btn"
+                                class="btn w-100 mb-2 fw-bold d-flex align-items-center justify-content-center gap-2"
+                                style="border-radius: 12px;
                                    background: #f8f9fa;
                                    border: 1px solid var(--geo-pastel);
                                    color: var(--geo-dark-blue);
                                    transition: all 0.2s ease;">
-                        <span id="btn-icon"><i data-lucide="sparkles"></i></span>
-                        <span id="btn-text">Generate AI Summary</span>
-                    </button>
-                </form>
+                            <span id="btn-icon"><i data-lucide="sparkles"></i></span>
+                            <span id="btn-text">Generate AI Summary</span>
+                        </button>
+                    </form>
 
                     <form action="{{ url_for('add_book', username=current_user.name) }}"
                           method="POST">
@@ -148,7 +148,8 @@
                             border-radius: 12px;
                             white-space: pre-wrap;
                             line-height: 1.7;
-                            color: var(--geo-dark-blue);">{{ summary }}</div>
+                            color: var(--geo-dark-blue);">{{ summary }}
+                </div>
 
             </div>
 

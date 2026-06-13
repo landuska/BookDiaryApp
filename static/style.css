@@ -266,3 +266,57 @@ body {
 .btn-geo-quick:active {
     transform: translateY(0);
 }
+
+.max-width-layout {
+        max-width: 1000px;
+    }
+
+.p-25 {
+    padding: 0.65rem 1rem !important;
+}
+
+.collection-item-link {
+    text-decoration: none;
+}
+
+.dynamic-card {
+    border-radius: 10px !important;
+    transition: transform 0.2s ease-in-out;
+}
+
+.dynamic-card:hover {
+    transform: translateX(3px);
+}
+
+.small-heading {
+    font-size: 0.95rem;
+}
+
+.micro-text {
+    font-size: 0.75rem;
+}
+
+.micro-badge {
+    border-radius: 15px;
+    padding: 4px 10px;
+    font-size: 0.75rem;
+}
+
+.compact-quote {
+    font-style: italic;
+    font-size: 0.88rem;
+    line-height: 1.5;
+}
+
+.btn-xs {
+    padding: 4px 10px;
+    font-size: 0.75rem;
+}
+
+.geo-icon {
+    font-size: 1.8rem;
+    color: var(--geo-dark-blue);
+}
+.border-primary {
+    border-color: var(--bs-primary) !important;
+}

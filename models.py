@@ -155,7 +155,10 @@ class UserBooks(db.Model):
         Returns:
             Returns: Optional[str]: The note's text without whitespace, or None.
         """
-        return value.strip() if value else value
+        if value is None:
+            return None
+        stripped = value.strip()
+        return stripped if stripped != "" else None
 
     def __repr__(self) -> str:
         return f"UserBooks (user_id={self.user_id}, book_id={self.book_id})"
@@ -217,7 +220,10 @@ class Community(db.Model):
         Returns:
             Returns: Optional[str]: The note's text without whitespace, or None.
         """
-        return value.strip() if value else value
+        if value is None:
+            return None
+        stripped = value.strip()
+        return stripped if stripped != "" else None
 
     def __repr__(self) -> str:
         return f"Community (id={self.community_id}, name={self.community_name})"

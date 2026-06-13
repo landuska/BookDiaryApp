@@ -13,9 +13,6 @@ The application uses Flask, SQLAlchemy, Flask-Login,
 OpenAI services, PostgreSQL and Langgraph.
 """
 
-import os
-
-from dotenv import load_dotenv
 from flask import Flask, render_template, request, redirect, url_for, flash, jsonify
 from flask_login import LoginManager, login_user, logout_user, login_required, current_user
 from langchain_core.messages import HumanMessage
@@ -250,10 +247,12 @@ def register():
             flash(str(e))
 
         except SQLAlchemyError as e:
-            flash(f"Database error: {str(e)}")
+            print(f"Database error: {str(e)}")
+            flash(f"An error occurred while working with the database. Please try again later.")
 
         except Exception as e:
-            flash(f"Some error occurred. Please try again: {str(e)}")
+            print(f"Error: {str(e)}")
+            flash("A system error occurred. Please try again later.")
 
 
 @app.route('/', methods=['POST'])
@@ -277,13 +276,14 @@ def login():
 
     except ValueError as e:
         flash(str(e))
-        return redirect(url_for('index'))
 
     except SQLAlchemyError as e:
-        flash(f"Database error: {str(e)}")
+        print(f"Database error: {str(e)}")
+        flash(f"An error occurred while working with the database. Please try again later.")
 
     except Exception as e:
-        flash(f"Some error occurred. Please try again: {str(e)}")
+        print(f"Error: {str(e)}")
+        flash("A system error occurred. Please try again later.")
 
 
 @app.route('/<username>', methods=['GET'])
@@ -370,10 +370,12 @@ def delete_user(username):
         flash(str(e))
 
     except SQLAlchemyError as e:
-        flash(f"Database error: {str(e)}")
+        print(f"Database error: {str(e)}")
+        flash(f"An error occurred while working with the database. Please try again later.")
 
     except Exception as e:
-        flash(f"Some error occurred. Please try again: {str(e)}")
+        print(f"Error: {str(e)}")
+        flash("A system error occurred. Please try again later.")
 
     return redirect(url_for('index'))
 
@@ -526,10 +528,12 @@ def confirm_add_book(username):
         flash(str(e))
 
     except SQLAlchemyError as e:
-        flash(f"Database error: {str(e)}")
+        print(f"Database error: {str(e)}")
+        flash(f"An error occurred while working with the database. Please try again later.")
 
     except Exception as e:
-        flash(f"Some error occurred. Please try again: {str(e)}")
+        print(f"Error: {str(e)}")
+        flash("A system error occurred. Please try again later.")
 
     return redirect(request.referrer or url_for('add_book', username=current_user.name))
 
@@ -605,10 +609,12 @@ def update_book_info(book_id):
         flash(str(e))
 
     except SQLAlchemyError as e:
-        flash(f"Database error: {str(e)}")
+        print(f"Database error: {str(e)}")
+        flash(f"An error occurred while working with the database. Please try again later.")
 
     except Exception as e:
-        flash(f"Some error occurred. Please try again: {str(e)}")
+        print(f"Error: {str(e)}")
+        flash("A system error occurred. Please try again later.")
 
     return redirect(url_for('user_books', username=current_user.name))
 
@@ -643,10 +649,12 @@ def delete_book(book_id: int):
         flash(str(e))
 
     except SQLAlchemyError as e:
-        flash(f"Database error: {str(e)}")
+        print(f"Database error: {str(e)}")
+        flash(f"An error occurred while working with the database. Please try again later.")
 
     except Exception as e:
-        flash(f"Some error occurred. Please try again: {str(e)}")
+        print(f"Error: {str(e)}")
+        flash("A system error occurred. Please try again later.")
 
     return redirect(url_for('user_books', username=current_user.name))
 
@@ -729,10 +737,12 @@ def create_community():
             flash(str(e))
 
         except SQLAlchemyError as e:
-            flash(f"Database error: {str(e)}")
+            print(f"Database error: {str(e)}")
+            flash(f"An error occurred while working with the database. Please try again later.")
 
         except Exception as e:
-            flash(f"Some error occurred. Please try again: {str(e)}")
+            print(f"Error: {str(e)}")
+            flash("A system error occurred. Please try again later.")
 
         return redirect(url_for('create_community'))
 
@@ -761,10 +771,12 @@ def update_community(community_id):
         flash(str(e))
 
     except SQLAlchemyError as e:
-        flash(f"Database error: {str(e)}")
+        print(f"Database error: {str(e)}")
+        flash(f"An error occurred while working with the database. Please try again later.")
 
     except Exception as e:
-        flash(f"Some error occurred. Please try again: {str(e)}")
+        print(f"Error: {str(e)}")
+        flash("A system error occurred. Please try again later.")
 
     return redirect(url_for('user_communities', username=current_user.name))
 
@@ -789,10 +801,12 @@ def join_community(community_id):
         flash(str(e))
 
     except SQLAlchemyError as e:
-        flash(f"Database error: {str(e)}")
+        print(f"Database error: {str(e)}")
+        flash(f"An error occurred while working with the database. Please try again later.")
 
     except Exception as e:
-        flash(f"Some error occurred. Please try again: {str(e)}")
+        print(f"Error: {str(e)}")
+        flash("A system error occurred. Please try again later.")
 
     return redirect(url_for('user_communities', username=current_user.name))
 
@@ -851,10 +865,12 @@ def leave_community(community_id: int):
         flash(str(e))
 
     except SQLAlchemyError as e:
-        flash(f"Database error: {str(e)}")
+        print(f"Database error: {str(e)}")
+        flash(f"An error occurred while working with the database. Please try again later.")
 
     except Exception as e:
-        flash(f"Some error occurred. Please try again: {str(e)}")
+        print(f"Error: {str(e)}")
+        flash("A system error occurred. Please try again later.")
 
     return redirect(url_for('user_communities', username=current_user.name))
 
@@ -885,10 +901,12 @@ def delete_community(community_id: int):
         flash(str(e))
 
     except SQLAlchemyError as e:
-        flash(f"Database error: {str(e)}")
+        print(f"Database error: {str(e)}")
+        flash(f"An error occurred while working with the database. Please try again later.")
 
     except Exception as e:
-        flash(f"Some error occurred. Please try again: {str(e)}")
+        print(f"Error: {str(e)}")
+        flash("A system error occurred. Please try again later.")
 
     return redirect(url_for('user_communities', username=current_user.name))
 
